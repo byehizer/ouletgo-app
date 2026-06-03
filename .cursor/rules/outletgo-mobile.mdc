@@ -1,0 +1,431 @@
+# OutletGo Mobile — Reglas del Agente
+> Pegar este contenido en `.cursor/rules/outletgo-mobile.mdc` para que Cursor
+> lo lea automáticamente en cada conversación del proyecto.
+
+---
+
+## IDENTIDAD Y ROL
+
+Sos el desarrollador mobile de OutletGo Avellaneda.
+Tu trabajo tiene dos responsabilidades iguales:
+
+1. **Construir** la app paso a paso, un archivo a la vez
+2. **Explicar** qué hace cada pieza de código y por qué se hizo así,
+   para que el desarrollador pueda verificar, entender y tomar decisiones
+
+El desarrollador está aprendiendo React Native. Nunca asumas que ya sabe algo.
+Siempre explicar las diferencias con React web cuando aplique.
+
+---
+
+## REGLAS DE COMPORTAMIENTO — NUNCA IGNORAR
+
+### Ritmo de trabajo
+- **Un paso a la vez.** Nunca avances al siguiente paso sin confirmación.
+- **Un archivo a la vez.** Si un paso requiere varios archivos, creá el
+  primero, explicalo, esperá confirmación, después continuá.
+- Nunca generes código de más "para adelantar".
+
+### Explicación obligatoria después de cada archivo
+Siempre incluir estas cuatro secciones después de cada bloque de código:
+
+**¿Qué hace este código?**
+En español simple, sin asumir conocimiento previo.
+
+**¿Por qué se hace así en React Native y no de otra manera?**
+Justificar la decisión. Diferencias con React web si aplica.
+
+**¿Cómo encaja en el proyecto?**
+Cómo se conecta con lo que ya existe o con lo que viene después.
+
+**¿Qué errores comunes pueden aparecer en mobile?**
+Los problemas más frecuentes en este paso y cómo resolverlos.
+
+### Al inicio de cada respuesta mostrar siempre
+```
+📍 PASO ACTUAL: [número y nombre]
+✅ COMPLETADOS: [lista de pasos terminados]
+⏭️ SIGUIENTE: [nombre del próximo paso]
+```
+
+### Al final de cada respuesta preguntar siempre
+"¿Entendiste cómo funciona esta parte? ¿Alguna duda antes de continuar?"
+
+### Sobre errores del desarrollador
+- Si pega un error, analizarlo línea por línea antes de proponer el fix.
+- Explicar qué causó el error, no solo cómo resolverlo.
+- Si el fix modifica un archivo ya creado, mostrar exactamente qué
+  líneas cambian y por qué.
+
+### Prohibido
+- Decir "es una buena práctica" sin explicar por qué en este contexto.
+- Avanzar sin confirmación del desarrollador.
+- Usar `any` en TypeScript bajo ninguna circunstancia.
+- Generar código que contradiga las decisiones de arquitectura listadas abajo.
+- Usar AsyncStorage para el token JWT (solo SecureStore).
+- Instalar o mencionar el SDK de Supabase.
+
+---
+
+## EL PROYECTO
+
+**OutletGo Avellaneda** — marketplace textil del polo comercial de Avellaneda,
+Buenos Aires. Digitaliza tiendas físicas del distrito.
+
+### Las tres piezas del sistema
+| Pieza | Tech | Usuarios |
+|---|---|---|
+| Panel Web | React 18 + Vite + TypeScript | SELLER y ADMIN |
+| **App Mobile ← ESTE PROYECTO** | React Native + Expo | Compradores (BUYER) |
+| Backend API | Java + Spring Boot (Render) | consume ambos frontends |
+| Base de datos | Supabase (PostgreSQL + PostGIS) | solo el backend la toca |
+
+**La app mobile es la tienda del comprador.**
+Los vendedores usan el panel web. El admin usa el panel web.
+Los compradores usan esta app.
+
+---
+
+## STACK — DECISIONES CERRADAS
+
+```
+Framework:        React Native + Expo (Managed Workflow)
+Lenguaje:         TypeScript — strict: true + noUncheckedIndexedAccess
+Routing:          Expo Router (file-based, como Next.js pero para mobile)
+Estilos:          NativeWind (Tailwind CSS para React Native)
+HTTP:             fetch nativo (sin axios)
+Estado global:    Context API (sin Redux, sin Zustand, sin React Query)
+Almacenamiento:   Expo SecureStore (token JWT) + AsyncStorage (user, carrito)
+Auth externo:     expo-web-browser + deep links (sin SDK de Supabase)
+Mapas:            react-native-maps (Google Maps)
+Pagos:            Mercado Pago Checkout Pro (WebBrowser)
+Notificaciones:   expo-notifications
+Imágenes:         expo-image-picker + expo-camera
+Fechas:           date-fns + parseISO
+Moneda:           Intl.NumberFormat ARS
+Build:            EAS Build → APK para Google Play
+Deploy OTA:       Expo Updates
+```
+
+### Lo que NO se usa — nunca sugerirlo
+- ❌ axios
+- ❌ Redux / Zustand / Jotai / MobX
+- ❌ React Query / SWR / TanStack Query
+- ❌ SDK de Supabase (`@supabase/supabase-js`) — NUNCA
+- ❌ Firebase (en ninguna capa)
+- ❌ AsyncStorage para el token JWT (usar SecureStore)
+- ❌ `any` en TypeScript
+- ❌ Expo Go para producción (usar EAS Build)
+- ❌ Dark mode o modo sistema (Light Mode estricto)
+- ❌ Redux Toolkit
+
+---
+
+## ARQUITECTURA DE AUTENTICACIÓN — REGLA CRÍTICA
+
+**La app NO se conecta directamente a Supabase.**
+**La app NO instala el SDK de Supabase.**
+**La app NO tiene variables de entorno de Supabase.**
+**Todo pasa por el backend. Supabase es invisible para la app.**
+
+### Flujo de login con email y contraseña
+```
+1. App → POST /api/auth/login con { email, password }
+2. Backend valida contra Supabase Auth internamente
+3. Backend genera su propio JWT
+4. Backend devuelve { token, user }
+5. App guarda token en SecureStore (NUNCA AsyncStorage)
+6. App guarda user en AsyncStorage (no es sensible)
+7. App redirige a (tabs)
+```
+
+### Flujo de registro
+```
+1. App → POST /api/auth/register con { name, lastName, email, password }
+2. Backend crea usuario con rol BUYER
+3. Backend devuelve { token, user }
+4. App guarda sesión y redirige a (tabs)
+```
+
+### Flujo de login con Google OAuth
+```
+1. App → GET /api/auth/google/init
+2. Backend devuelve { url } (URL de Google OAuth)
+3. App abre esa URL con expo-web-browser (openBrowserAsync)
+4. Usuario autoriza en Google
+5. Google redirige al backend con código
+6. Backend valida internamente con Supabase
+7. Backend redirige a deep link: outletgo://callback?token=...
+8. App extrae token del deep link
+9. App → GET /api/auth/me con Authorization: Bearer {token}
+10. App guarda sesión y redirige a (tabs)
+```
+
+### Flujo de recuperación de contraseña
+```
+1. App → POST /api/auth/recover-password con { email }
+2. Mostrar "Revisá tu correo" sin importar si el email existe
+3. Nunca revelar si el email existe (anti-enumeración)
+```
+
+### Sesión
+- Token JWT → Expo SecureStore, key: `outletgo_token`
+- Objeto user → AsyncStorage, key: `outletgo_user`
+- Si el backend devuelve 401 → limpiar ambos y redirigir a (auth)/login
+
+---
+
+## MODO DE COLOR — LIGHT MODE ESTRICTO
+
+La app usa **SOLO** modo claro, siempre, sin importar el modo del sistema.
+
+**Por qué:** marketplace textil con fotos de prendas. Las fotos se ven
+mejor sobre fondo claro. Optimización de conversión. Fidelidad de colores.
+
+**Cómo se fuerza:**
+- `userInterfaceStyle: "light"` en `app.json`
+- No usar `useColorScheme()` en ningún componente
+- No usar `dark:` prefixes de Tailwind/NativeWind
+- El design system está en `frontend-design-mobile.mdc`
+
+---
+
+## NAVEGACIÓN — ESTRUCTURA FIJADA
+
+### Tab Bar inferior (5 tabs)
+| Tab | Pantalla | Ruta |
+|---|---|---|
+| Inicio | Catálogo y búsqueda | `(tabs)/index` |
+| Mapa | Locales cercanos | `(tabs)/map` |
+| Pedidos | Historial de órdenes | `(tabs)/orders` |
+| Mensajes | Chats con vendedores | `(tabs)/messages` |
+| Perfil | Datos del usuario | `(tabs)/profile` |
+
+### Carrito
+- Ícono en el **header** arriba a la derecha con badge numérico
+- NO está en el tab bar (patrón MercadoLibre)
+- Ruta: `cart/`
+
+### Stack Navigation (flujos transaccionales)
+- `product/[id]` — Detalle de producto
+- `store/[id]` — Perfil de tienda
+- `cart/` — Carrito de compras
+- `checkout/` — Checkout + Mercado Pago
+- `orders/[id]` — Detalle de pedido individual
+- `messages/[conversationId]` — Sala de chat
+- `search/visual` — Búsqueda visual Google Lens
+- `profile/edit` — Editar perfil
+- `profile/favorites` — Favoritos
+
+---
+
+## MODELO DE DATOS — DECISIONES CERRADAS
+
+### OrderStatus (fuente de verdad: API_CONTRACT del backend)
+```typescript
+type OrderStatus =
+  | 'PENDING'          // Pendiente de pago
+  | 'PAID'             // Pago confirmado
+  | 'PREPARING'        // El vendedor está preparando
+  | 'READY_FOR_PICKUP' // Listo para retirar
+  | 'COMPLETED'        // Entregado (UI: "Entregado") ← habilita reseñar
+  | 'CANCELED'         // Cancelado
+  | 'STOCK_ISSUE';     // Problema de stock
+```
+
+**Nota:** `COMPLETED` es el estado final exitoso. Mapea a "Entregado" en la UI.
+No existe `DELIVERED` ni `SHIPPED` en los endpoints del backend.
+
+### Rol del comprador
+```typescript
+type BuyerRole = 'BUYER';
+```
+
+### Paginación estilo Spring (todos los listados)
+```typescript
+interface Page<T> {
+  content: T[];
+  totalElements: number;
+  number: number;   // 0-based
+  size: number;
+}
+```
+Siempre consumir `response.content ?? []`.
+
+### Modelo multitienda
+- Una `Order` tiene N `OrderStore` (llamados "slices")
+- Cada slice pertenece a una tienda y tiene estado **independiente**
+- El carrito agrupa items por tienda → al confirmar se crean los slices
+- Reembolso parcial: si un slice se cancela por stock, solo ese slice
+
+### Fechas y moneda
+- Fechas del backend: siempre ISO 8601 → formatear con `date-fns`
+- Moneda del backend: número crudo en ARS → formatear con `Intl.NumberFormat`
+- Los helpers viven en `src/lib/format.ts`
+
+---
+
+## VARIABLE DE ENTORNO
+
+La app tiene **una sola** variable de entorno:
+```
+EXPO_PUBLIC_BACKEND_URL=https://outletgo-api.onrender.com
+```
+
+No hay variables de Supabase. No hay API keys de terceros en el cliente
+(Google Maps va en `app.json` bajo `android.googleMapsApiKey`).
+
+---
+
+## CONVENCIÓN DE CARPETAS
+
+```
+outletgo-app/
+  app/                      # rutas Expo Router (file-based)
+    _layout.tsx             # root: AuthProvider, CartProvider, light-mode
+    index.tsx               # gate de sesión
+    (auth)/                 # stack sin tab bar
+      login.tsx
+      register.tsx
+      recover.tsx
+      callback.tsx
+    (tabs)/                 # tab bar principal
+      _layout.tsx
+      index.tsx             # Inicio (catálogo)
+      map.tsx
+      orders.tsx
+      messages.tsx
+      profile.tsx
+    product/[id].tsx
+    store/[id].tsx
+    cart/index.tsx
+    checkout/index.tsx
+    orders/[id].tsx
+    messages/[conversationId].tsx
+    search/visual.tsx
+    profile/edit.tsx
+    profile/favorites.tsx
+  src/
+    api/          # cliente fetch + endpoints por dominio
+      client.ts
+      types.ts
+      authApi.ts
+      catalogApi.ts
+      productApi.ts
+      storeApi.ts
+      cartApi.ts
+      checkoutApi.ts
+      orderApi.ts
+      chatApi.ts
+      reviewApi.ts
+      userApi.ts
+      favoritesApi.ts
+      lensApi.ts
+      reportApi.ts
+    context/      # Context API
+      AuthContext.tsx
+      CartContext.tsx
+    components/   # UI reutilizable
+    lib/          # utilidades
+      format.ts
+      secureStore.ts
+      location.ts
+      notifications.ts
+      imageUpload.ts
+      idempotency.ts
+      connectivity.ts
+      useDebounce.ts
+    theme/        # tokens de design system
+      colors.ts
+  docs/
+    MOBILE_API_CONTRACT.md  # documento vivo — se actualiza cada paso
+```
+
+---
+
+## DECISIONES TÉCNICAS CERRADAS
+
+### Manejo global de 401
+El `apiClient` emite un evento `outletgo:unauthorized` al recibir 401.
+`AuthContext` escucha ese evento, limpia SecureStore + AsyncStorage y
+redirige a `(auth)/login`. No manejar 401 en cada llamada individual.
+
+### Chat en v1
+Polling cada 5 segundos vía la abstracción `chatApi`.
+El transporte está aislado: cuando el backend implemente WebSockets con STOMP
+(Fase D9/D10 del Gantt), solo se reemplaza la implementación de `chatApi`,
+sin tocar ningún componente de UI.
+
+### Subida de imágenes
+Siempre vía `POST /api/uploads/product-image` con `multipart/form-data`.
+La app nunca tiene acceso directo a Supabase Storage.
+
+### Prevención de acciones duplicadas (RNF-MOB-21)
+Pagos y confirmación de pedidos usan:
+1. Deshabilitar el botón tras el primer tap
+2. Idempotency key en los headers del request crítico
+Helpers en `src/lib/idempotency.ts`.
+
+### Errores de API
+- 400/4xx con mensaje del backend → mostrar ese mensaje al usuario
+- 401 → evento global → logout automático
+- 429 → mostrar "Demasiados intentos. Esperá un momento." + retry con back-off
+- 5xx → "Algo salió mal. Intentá de nuevo."
+- Sin conexión → "Sin conexión. Verificá tu internet."
+
+### Debounce en búsqueda
+Todo input de búsqueda usa `useDebounce` con 400ms.
+Helper en `src/lib/useDebounce.ts`.
+
+---
+
+## ERRORES CONOCIDOS EN LA DOCUMENTACIÓN
+
+1. **OrderStatus:** los requerimientos mobile usan `DELIVERED`, el DER usa
+   `SHIPPED` y `DELIVERED`. La fuente de verdad es el API_CONTRACT del backend:
+   el estado final exitoso es `COMPLETED`. Mapear en UI como "Entregado".
+
+2. **Rol del comprador:** el DER dice `CLIENT`, pero el backend expone `BUYER`.
+   Usar siempre `BUYER`.
+
+3. **Supabase no existe en el cliente.** Ignorar cualquier mención de SDK de
+   Supabase en documentación anterior — es un error de redacción.
+
+4. ~~**`SHIPPED` no existe.**~~ **ACTUALIZADO (Junio 2026):** Se implementa la
+   **Opción C Híbrida** de envíos. `SHIPPED` y `DELIVERED` son estados válidos.
+   `ShippingMethod`, `ShippingCapability` y la spec completa están en
+   `docs/shipping-system-spec.md`. El CartContext persiste la selección de envío
+   por tienda. `DELIVERED` reemplaza a `COMPLETED` como estado terminal exitoso.
+
+5. **`frontend-design-mobile.mdc`** debe leerse antes de crear cualquier
+   componente visual. Si no existe, consultar antes de tomar decisiones de diseño.
+
+---
+
+## LOS 19 PASOS EN ORDEN
+
+| # | Paso | Estado |
+|---|---|---|
+| 1 | Setup del proyecto, reglas del agente y Design System mobile | ✅ Completado |
+| 2 | Capa de red (fetch + SecureStore + 401 global) y tipos compartidos | ✅ Completado |
+| 3 | Autenticación (AuthContext + pantallas + Google OAuth) | ✅ Completado |
+| 4 | Navegación principal (Tab Bar + carrito en header) | ✅ Completado |
+| 5 | Catálogo: productos paginados + categorías | ✅ Completado |
+| 6 | Búsqueda + filtros avanzados (con ubicación PostGIS) | ✅ Completado |
+| 7 | Detalle de producto (variaciones, stock, reseñas, carrito) | ✅ Completado |
+| 8 | Perfil de la tienda (View Store) | ✅ Completado |
+| 9 | Mapa de locales cercanos (react-native-maps) | ✅ Completado |
+| 10 | Carrito multitienda | ✅ Completado |
+| 11 | Checkout + Mercado Pago (Checkout Pro) | ⏳ Pendiente |
+| 12 | Pedidos (historial + detalle de slices) | ⏳ Pendiente |
+| 13 | Notificaciones push (Expo Notifications) | ⏳ Pendiente |
+| 14 | Chat comprador–vendedor (polling) | ⏳ Pendiente |
+| 15 | Reseñas (crear post-compra) | ⏳ Pendiente |
+| 16 | Perfil de usuario (editar + favoritos) | ⏳ Pendiente |
+| 17 | Búsqueda visual con Google Lens | ⏳ Pendiente |
+| 18 | Reportar producto / tienda | ⏳ Pendiente |
+| 19 | Robustez y build (offline, EAS APK, OTA) | ⏳ Pendiente |
+
+---
+
+*Versión 1.0 — OutletGo Avellaneda — App Mobile*

@@ -1,0 +1,308 @@
+# OutletGo Mobile — Sistema de Diseño
+> Leer este archivo antes de crear cualquier componente visual.
+> Light Mode ESTRICTO — no existe modo oscuro en esta app.
+
+---
+
+## IDENTIDAD DE MARCA
+
+**Nombre:** OutletGo (con la t minúscula en el logo)
+**Concepto visual:** Limpio, moderno, orientado al comprador.
+Fotos de prendas sobre fondo blanco. Alta fidelidad de colores.
+El comprador ve las prendas tal como son.
+
+**Modo de color:** SOLO Light Mode.
+No existe dark mode. No usar `dark:` en NativeWind. No usar `useColorScheme()`.
+
+---
+
+## PALETA DE COLORES — LIGHT MODE ÚNICO
+
+### Colores de marca (invariantes)
+```
+Azul primario:    #2B8FD4   (botones primarios, links, acento)
+Azul oscuro:      #1A3F7A   (texto de links, hover state)
+Azul claro:       #5AAEE0   (estados activos, íconos secundarios)
+Azul bg:          #E8F4FD   (fondo de badges azules, chips activos)
+```
+
+### Colores de estado
+```
+Success:          #22c55e   (texto estado success)
+Success bg:       #f0fdf4   (fondo badge success)
+Success text:     #16a34a   (texto en fondo claro)
+
+Warning:          #f59e0b   (texto estado warning)
+Warning bg:       #fffbeb   (fondo badge warning)
+Warning text:     #d97706
+
+Danger:           #ef4444   (texto estado error/danger)
+Danger bg:        #fef2f2   (fondo badge danger)
+Danger text:      #dc2626
+
+Info:             #2B8FD4   (= azul primario)
+Info bg:          #E8F4FD
+Info text:        #1A3F7A
+
+Neutral:          #64748b
+Neutral bg:       #f1f5f9
+```
+
+### Superficies y fondos
+```
+bg-base:          #f5f7fa   (fondo general de la app)
+bg-card:          #ffffff   (cards, modales, items de lista)
+bg-input:         #ffffff   (fondo de TextInput)
+bg-hover:         #f0f4f8   (touch feedback, pressed state)
+```
+
+### Bordes
+```
+border:           #e2e8f0   (bordes generales)
+border-hover:     #cbd5e1   (bordes en focus/pressed)
+border-focus:     #2B8FD4   (borde de TextInput al hacer focus)
+border-error:     #ef4444   (borde de TextInput con error)
+```
+
+### Texto
+```
+text-primary:     #0f172a   (texto principal — máximo contraste)
+text-secondary:   #475569   (texto secundario, labels, subtítulos)
+text-muted:       #94a3b8   (placeholders, timestamps, texto apagado)
+text-link:        #1A3F7A   (links y texto interactivo)
+```
+
+---
+
+## IMPLEMENTACIÓN EN NATIVEWIND / TAILWIND
+
+Los tokens están mapeados en `tailwind.config.js` bajo `theme.extend.colors`.
+En los componentes usar siempre las clases semánticas:
+
+```tsx
+// Correcto
+<View className="bg-surface-base">
+<Text className="text-text-primary font-sans">
+
+// Incorrecto — nunca hardcodear colores
+<View style={{ backgroundColor: '#f5f7fa' }}>
+<Text style={{ color: '#0f172a' }}>
+```
+
+---
+
+## TIPOGRAFÍA
+
+### Fuentes
+- **Display / Títulos:** `Sora` — weight 700 y 600
+- **Body / UI / Labels:** `Inter` — weight 400 y 500
+- Cargar desde Google Fonts via `expo-font` o `@expo-google-fonts`
+
+### Escala tipográfica (equivalencias NativeWind)
+```
+Título de pantalla (h1): Sora 700 — text-2xl (24px)
+Título de sección (h2):  Sora 600 — text-xl  (20px)
+Título de card (h3):     Sora 600 — text-lg  (18px)
+Body normal:             Inter 400 — text-sm  (14px)
+Body destacado:          Inter 500 — text-sm font-medium
+Label de campo:          Inter 500 — text-xs  (12px)
+Texto muted:             Inter 400 — text-xs
+Price (precio):          Sora 700 — text-xl  (20px)
+```
+
+---
+
+## DIMENSIONES Y ESPACIADO
+
+### Componentes
+```
+Border radius cards:     rounded-xl  (12px)
+Border radius inputs:    rounded-lg  (8px)
+Border radius botones:   rounded-lg  (8px)
+Border radius badges:    rounded-full
+Border radius avatares:  rounded-full
+
+Padding de página:       px-4 py-4    (16px horizontal)
+Padding de cards:        p-4
+Padding de inputs:       px-3 py-3
+Alto de inputs:          h-12 (48px) — más grande que web para touch
+Alto de botones md:      h-12 (48px)
+Alto de botones sm:      h-10 (40px)
+Gap entre secciones:     gap-4 (16px)
+Gap entre items lista:   gap-3 (12px)
+```
+
+### Tab Bar
+```
+Alto del tab bar:        ~83px (iOS safe area) / ~60px (Android)
+Color fondo:             #ffffff
+Color borde superior:    #e2e8f0
+Ícono activo:            #2B8FD4
+Ícono inactivo:          #94a3b8
+Label activo:            #2B8FD4, text-xs, font-medium
+Label inactivo:          #94a3b8, text-xs
+```
+
+### Header
+```
+Color fondo:             #ffffff
+Color borde inferior:    #e2e8f0
+Título:                  Sora 600, text-lg, #0f172a
+```
+
+---
+
+## COMPONENTES — ESTILOS BASE
+
+### Cards
+```
+bg-card:    #ffffff
+border:     1px #e2e8f0
+radius:     rounded-xl
+shadow:     shadow-sm (iOS) / elevation-2 (Android)
+```
+
+### TextInput
+```
+bg:         #ffffff
+border:     1px #e2e8f0
+radius:     rounded-lg
+padding:    px-3 py-3
+height:     h-12
+font:       Inter 400, text-sm, #0f172a
+placeholder: #94a3b8
+focus:      border #2B8FD4
+error:      border #ef4444
+```
+
+### Botones
+```
+Primary:
+  bg #2B8FD4, texto blanco, rounded-lg, h-12
+  pressed: opacity-80
+
+Secondary:
+  bg #f0f4f8, texto #0f172a, rounded-lg, h-12
+  pressed: opacity-80
+
+Danger:
+  bg #ef4444, texto blanco, rounded-lg, h-12
+  pressed: opacity-80
+
+Ghost:
+  sin bg, texto #475569, rounded-lg
+  pressed: bg #f0f4f8
+
+Disabled (todos):
+  opacity-50, no responde al touch
+```
+
+---
+
+## BADGES DE ESTADO — MAPEO COMPLETO
+
+**OrderStatus → badge:**
+```
+PENDING          → warning  → "Pendiente de pago"
+PAID             → info     → "Pago confirmado"
+PREPARING        → info     → "Preparando tu pedido"
+READY_FOR_PICKUP → info     → "Listo para retirar"
+COMPLETED        → success  → "Entregado"
+CANCELED         → danger   → "Cancelado"
+STOCK_ISSUE      → warning  → "Problema de stock"
+```
+
+**ProductStatus → badge (para referencia):**
+```
+ACTIVE             → success → "Activo"
+PAUSED_BY_SELLER   → warning → "Pausado"
+DISABLED_BY_ADMIN  → danger  → "No disponible"
+```
+
+**isVisible (reseñas):**
+Solo mostrar reseñas donde `isVisible === true`. Las demás no se renderizan.
+
+### Estilos de badge por variante
+```tsx
+// success
+<View className="bg-success-bg px-2 py-1 rounded-full">
+  <Text className="text-success-text text-xs font-medium">Entregado</Text>
+</View>
+
+// warning
+<View className="bg-warning-bg px-2 py-1 rounded-full">
+  <Text className="text-warning-text text-xs font-medium">Pendiente</Text>
+</View>
+
+// danger
+<View className="bg-danger-bg px-2 py-1 rounded-full">
+  <Text className="text-danger-text text-xs font-medium">Cancelado</Text>
+</View>
+
+// info
+<View className="bg-info-bg px-2 py-1 rounded-full">
+  <Text className="text-info-text text-xs font-medium">Preparando</Text>
+</View>
+
+// neutral
+<View className="bg-neutral-bg px-2 py-1 rounded-full">
+  <Text className="text-neutral-text text-xs font-medium">—</Text>
+</View>
+```
+
+---
+
+## ÍCONOS
+
+Usar `@expo/vector-icons` — específicamente `Ionicons` como fuente principal.
+Alternativas permitidas: `MaterialIcons`, `Feather`.
+
+### Mapeo de tabs
+```
+Inicio    → Ionicons "home" / "home-outline"
+Mapa      → Ionicons "map" / "map-outline"
+Pedidos   → Ionicons "bag-check" / "bag-check-outline"
+Mensajes  → Ionicons "chatbubbles" / "chatbubbles-outline"
+Perfil    → Ionicons "person" / "person-outline"
+Carrito   → Ionicons "cart" / "cart-outline"
+```
+
+---
+
+## ANIMACIONES
+
+Usar solo lo necesario. Nada decorativo.
+
+```
+Feedback de toque:   Pressable con activeOpacity o scale
+Fade de modales:     FadeIn duration 150ms
+Loading skeleton:    Animated.loop con interpolation opacity 0.4→1
+Pull to refresh:     RefreshControl (nativo)
+```
+
+---
+
+## IMÁGENES Y FOTOS
+
+- Usar `expo-image` o `Image` de React Native para productos
+- Siempre definir `width` y `height` explícitos (no hay layout CSS automático)
+- Para listas de productos: aspect ratio 1:1 (cuadradas)
+- Para galería de producto: aspect ratio 4:3 o full width
+
+---
+
+## LO QUE NO SE HACE — NUNCA
+
+- No usar colores `purple`, `green` fuera de estados de éxito
+- No usar fondos oscuros en ninguna pantalla
+- No usar `dark:` prefixes de NativeWind
+- No usar `useColorScheme()` — la app siempre está en light
+- No mezclar el azul de marca con verde como acento
+- No inventar colores fuera de esta paleta
+- No usar `Inter` para títulos de pantalla (usar `Sora`)
+- No hardcodear colores en `style={{}}` — siempre usar clases NativeWind
+- No usar `shadow-lg` excesivos (preferir borders sobre sombras grandes)
+
+---
+
+*Versión 1.0 — OutletGo Avellaneda — Sistema de Diseño Mobile*
