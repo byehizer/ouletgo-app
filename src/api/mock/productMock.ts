@@ -23,7 +23,7 @@ const MOCK_CATEGORIES = [
 function getProductName(idx: number): string {
   const catIndex = Math.floor((idx - 1) / 8);
   const category = MOCK_CATEGORIES[catIndex];
-  const names = category ? PRODUCT_NAMES[category.id] : ['Producto outlet'];
+  const names = (category ? PRODUCT_NAMES[category.id] : undefined) ?? ['Producto outlet'];
   const i = (idx - 1) % 8;
   const base = names[i % names.length] ?? 'Producto outlet';
   return `${base} ${i + 1}`;

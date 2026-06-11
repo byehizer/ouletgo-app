@@ -57,12 +57,12 @@ export function useFavorite(
           if (!meta || !('productName' in meta)) {
             throw new Error('Datos del producto incompletos.');
           }
-          await addFavoriteProduct(id, meta);
+          await addFavoriteProduct(id, meta as FavoriteProductMeta);
         } else {
           if (!meta || !('storeName' in meta)) {
             throw new Error('Datos de la tienda incompletos.');
           }
-          await addFavoriteStore(id, meta);
+          await addFavoriteStore(id, meta as FavoriteStoreMeta);
         }
         setIsFavorite(true);
       }

@@ -1,5 +1,5 @@
 import { Linking, Platform } from 'react-native';
-import { PROVIDER_GOOGLE } from 'react-native-maps';
+import { PROVIDER_GOOGLE, type Provider } from 'react-native-maps';
 
 import { GOOGLE_MAPS_API_KEY } from '../config/env';
 
@@ -9,7 +9,7 @@ export function hasGoogleMapsKey(): boolean {
 }
 
 /** Provider Google Maps en iOS y Android (requiere key en app.config + rebuild). */
-export function getGoogleMapProvider() {
+export function getGoogleMapProvider(): Provider {
   return PROVIDER_GOOGLE;
 }
 

@@ -124,6 +124,8 @@ function withDistance(store: MockStoreSeed, coords?: Coordinates | null): StoreP
     schedule,
     isOpenNow: isStoreOpenNow(schedule),
     distanceKm,
+    shippingCapability: 'AMBOS',
+    shippingCostBase: 1500,
   };
 }
 

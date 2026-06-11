@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Fondo transparente para TextInput — evita el rectángulo blanco sobre barras semitransparentes. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-  <solid android:color="@android:color/transparent" />
-</shape>

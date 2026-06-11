@@ -22,3 +22,7 @@ docs
 
 expo-env.d.ts
 # @end expo-cli
+
+# Native folders
+android/
+ios/
