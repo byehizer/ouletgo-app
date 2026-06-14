@@ -1,5 +1,6 @@
 import type { OrderDetail, OrderListItem } from '../orderApi';
 import type { Page } from '../types';
+import { getMockProfileUser } from './mockUserState';
 
 const MOCK_ORDERS: OrderDetail[] = [
   {
@@ -196,6 +197,22 @@ const LIST_ITEMS = MOCK_ORDERS.map(toListItem);
 
 export async function mockFetchOrders(page: number, size: number): Promise<Page<OrderListItem>> {
   await new Promise((r) => setTimeout(r, 350));
+  const user = await getMockProfileUser();
+
+  // Si es un usuario nuevo (distinto a las cuentas demo), empieza sin pedidos
+  if (
+    user &&
+    user.email !== 'comprador@outletgo.com' &&
+    user.email !== 'demo@outletgo.com'
+  ) {
+    return {
+      content: [],
+      totalElements: 0,
+      number: page,
+      size,
+    };
+  }
+
   const start = page * size;
   const content = LIST_ITEMS.slice(start, start + size);
   return {
@@ -208,5 +225,16 @@ export async function mockFetchOrders(page: number, size: number): Promise<Page<
 
 export async function mockFetchOrderById(orderId: string): Promise<OrderDetail | null> {
   await new Promise((r) => setTimeout(r, 300));
+  const user = await getMockProfileUser();
+
+  // Si es un usuario nuevo (distinto a las cuentas demo), no tiene pedidos
+  if (
+    user &&
+    user.email !== 'comprador@outletgo.com' &&
+    user.email !== 'demo@outletgo.com'
+  ) {
+    return null;
+  }
+
   return MOCK_ORDERS.find((o) => o.id === orderId) ?? null;
 }

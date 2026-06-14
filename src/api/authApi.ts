@@ -49,7 +49,11 @@ function parseUser(raw: unknown): User {
   }
 
   const obj = raw as Record<string, unknown>;
-  const role = obj['role'];
+  let role = obj['role'];
+
+  if (role === 'CLIENT') {
+    role = 'BUYER';
+  }
 
   if (role !== 'BUYER') {
     throw new AuthRoleError();
@@ -103,7 +107,11 @@ export async function loginWithEmail(data: LoginRequest): Promise<AuthResponse> 
 
 export async function registerBuyer(data: RegisterRequest): Promise<AuthResponse> {
   if (USE_MOCKS) return mockRegister(data);
-  const raw = await apiClient.post<unknown>('/api/auth/register', data, PUBLIC_AUTH);
+  const raw = await apiClient.post<unknown>(
+    '/api/auth/register',
+    { ...data, role: 'CLIENT' },
+    PUBLIC_AUTH,
+  );
   return parseAuthResponse(raw);
 }
 

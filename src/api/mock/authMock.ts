@@ -1,7 +1,13 @@
 import type { AuthResponse, User } from '../types';
 
 import { MOCK_DEMO_EMAIL, MOCK_DEMO_PASSWORD, MOCK_TOKEN } from './constants';
-import { createMockUserFromTemplate, getMockProfileUser } from './mockUserState';
+import {
+  createMockUserFromTemplate,
+  getMockProfileUser,
+  setMockProfileUser,
+  getMockUserPassword,
+  setMockUserPassword,
+} from './mockUserState';
 
 const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms));
 
@@ -13,8 +19,14 @@ export function isMockToken(token: string | null | undefined): boolean {
 
 export async function mockLogin(email: string, password: string): Promise<AuthResponse> {
   await delay();
-  if (email === MOCK_DEMO_EMAIL && password === MOCK_DEMO_PASSWORD) {
-    return { token: MOCK_TOKEN, user: getMockProfileUser() };
+  const current = await getMockProfileUser();
+  const currentPassword = await getMockUserPassword();
+
+  if (
+    email.trim().toLowerCase() === current.email.toLowerCase() &&
+    password === currentPassword
+  ) {
+    return { token: MOCK_TOKEN, user: current };
   }
   throw new Error('Credenciales inválidas. En modo demo usá demo@outletgo.com / demo1234');
 }
@@ -23,6 +35,7 @@ export async function mockRegister(data: {
   name: string;
   lastName: string;
   email: string;
+  password?: string;
 }): Promise<AuthResponse> {
   await delay();
   const user = createMockUserFromTemplate({
@@ -31,12 +44,16 @@ export async function mockRegister(data: {
     name: data.name,
     lastName: data.lastName,
   });
+  await setMockProfileUser(user);
+  if (data.password) {
+    await setMockUserPassword(data.password);
+  }
   return { token: MOCK_TOKEN, user };
 }
 
 export async function mockFetchMe(): Promise<User> {
   await delay(200);
-  return getMockProfileUser();
+  return await getMockProfileUser();
 }
 
 export async function mockRecoverPassword(): Promise<void> {
@@ -45,5 +62,5 @@ export async function mockRecoverPassword(): Promise<void> {
 
 export async function mockGoogleLogin(): Promise<AuthResponse> {
   await delay(600);
-  return { token: MOCK_TOKEN, user: getMockProfileUser() };
+  return { token: MOCK_TOKEN, user: await getMockProfileUser() };
 }

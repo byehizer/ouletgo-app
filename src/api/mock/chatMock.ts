@@ -3,12 +3,19 @@ import type {
   ConversationDetail,
   ConversationListItem,
 } from '../chatApi';
+import { getMockProfileUser } from './mockUserState';
 
 const now = Date.now();
 
-const conversations: ConversationDetail[] = [
+// Agregamos la propiedad userEmail para identificar de quién es cada conversación
+interface MockConversationDetail extends ConversationDetail {
+  userEmail: string;
+}
+
+const conversations: MockConversationDetail[] = [
   {
     id: 'conv-1',
+    userEmail: 'comprador@outletgo.com',
     storeId: 'store-1',
     storeName: 'Outlet Textil Avellaneda',
     storeLogoUrl: null,
@@ -20,6 +27,7 @@ const conversations: ConversationDetail[] = [
   },
   {
     id: 'conv-2',
+    userEmail: 'comprador@outletgo.com',
     storeId: 'store-2',
     storeName: 'Moda Sur',
     storeLogoUrl: null,
@@ -31,6 +39,7 @@ const conversations: ConversationDetail[] = [
   },
   {
     id: 'conv-3',
+    userEmail: 'comprador@outletgo.com',
     storeId: 'store-3',
     storeName: 'Urban Sneakers',
     storeLogoUrl: null,
@@ -102,7 +111,15 @@ export async function mockFetchConversations(
   size: number,
 ): Promise<{ content: ConversationListItem[]; totalElements: number }> {
   await delay();
-  const sorted = [...conversations].sort(
+  const user = await getMockProfileUser();
+  const userEmail = user?.email ?? '';
+
+  // Filtramos por el email del usuario logueado actualmente
+  const userConvs = conversations.filter(
+    (c) => c.userEmail.toLowerCase() === userEmail.toLowerCase(),
+  );
+
+  const sorted = [...userConvs].sort(
     (a, b) =>
       new Date(b.lastMessageAt ?? 0).getTime() - new Date(a.lastMessageAt ?? 0).getTime(),
   );
@@ -118,7 +135,7 @@ export async function mockFetchConversations(
     lastMessageAt: c.lastMessageAt,
     unreadCount: c.unreadCount,
   }));
-  return { content, totalElements: conversations.length };
+  return { content, totalElements: userConvs.length };
 }
 
 export async function mockFetchConversation(
@@ -196,14 +213,21 @@ export async function mockStartConversation(
   productId?: string | null,
 ): Promise<ConversationDetail> {
   await delay();
+  const user = await getMockProfileUser();
+  const userEmail = user?.email ?? '';
+
   const existing = conversations.find(
-    (c) => c.storeId === storeId && c.productId === (productId ?? null),
+    (c) =>
+      c.storeId === storeId &&
+      c.productId === (productId ?? null) &&
+      c.userEmail.toLowerCase() === userEmail.toLowerCase(),
   );
   if (existing) return existing;
 
   const id = `conv-new-${++messageSeq}`;
-  const conv: ConversationDetail = {
+  const conv: MockConversationDetail = {
     id,
+    userEmail,
     storeId,
     storeName:
       storeId === 'store-1'
