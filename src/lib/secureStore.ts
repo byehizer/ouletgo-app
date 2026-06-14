@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { clearMockUserState } from '../api/mock/mockUserState';
 
 const TOKEN_KEY = 'outletgo_token';
 const USER_KEY = 'outletgo_user';
@@ -47,5 +48,5 @@ export async function deleteUser(): Promise<void> {
  * Se llama en logout y en cualquier respuesta 401 del backend.
  */
 export async function clearSession(): Promise<void> {
-  await Promise.all([deleteToken(), deleteUser()]);
+  await Promise.all([deleteToken(), deleteUser(), clearMockUserState()]);
 }

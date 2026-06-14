@@ -37,13 +37,15 @@ export interface NotificationDeepLink {
   params?: Record<string, string>;
 }
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+if (Platform.OS !== 'web') {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+}
 
 function getExpoProjectId(): string | undefined {
   const extra = Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined;
@@ -102,6 +104,7 @@ export async function registerForPushNotifications(): Promise<string | null> {
 }
 
 export async function unregisterPushNotifications(): Promise<void> {
+  if (Platform.OS === 'web') return;
   const token = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
   if (token) {
     await unregisterPushTokenOnBackend(token);
@@ -178,6 +181,7 @@ export function getDeepLinkFromNotificationData(
 export function addNotificationResponseListener(
   onNavigate: (link: NotificationDeepLink) => void,
 ): () => void {
+  if (Platform.OS === 'web') return () => {};
   const sub = Notifications.addNotificationResponseReceivedListener((response) => {
     const link = getDeepLinkFromNotificationData(
       response.notification.request.content.data,
@@ -191,6 +195,7 @@ export function addNotificationResponseListener(
 export function addNotificationReceivedListener(
   handler: (notification: Notifications.Notification) => void,
 ): () => void {
+  if (Platform.OS === 'web') return () => {};
   const sub = Notifications.addNotificationReceivedListener(handler);
   return () => sub.remove();
 }
@@ -199,6 +204,7 @@ export function addNotificationReceivedListener(
  * Si la app se abrió desde una notificación (cold start), devuelve el deep link.
  */
 export async function getInitialNotificationDeepLink(): Promise<NotificationDeepLink | null> {
+  if (Platform.OS === 'web') return null;
   const response = await Notifications.getLastNotificationResponseAsync();
   if (!response) return null;
   return getDeepLinkFromNotificationData(response.notification.request.content.data);

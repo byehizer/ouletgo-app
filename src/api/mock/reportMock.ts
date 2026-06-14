@@ -5,13 +5,19 @@ import {
   type ReportTargetType,
   type SubmitReportRequest,
 } from '../reportTypes';
+import { getMockProfileUser } from './mockUserState';
 
 const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms));
 
 let reportSeq = 3;
 
-const mockReports: BuyerReport[] = [
+interface MockBuyerReport extends BuyerReport {
+  userEmail: string;
+}
+
+const mockReports: MockBuyerReport[] = [
   {
+    userEmail: 'comprador@outletgo.com',
     id: 'mock-report-1',
     targetType: 'PRODUCT',
     targetId: 'mock-prod-1',
@@ -27,6 +33,7 @@ const mockReports: BuyerReport[] = [
     seenByBuyer: true,
   },
   {
+    userEmail: 'comprador@outletgo.com',
     id: 'mock-report-2',
     targetType: 'STORE',
     targetId: 'mock-store-2',
@@ -46,23 +53,35 @@ function isActiveStatus(status: BuyerReport['status']): boolean {
   return status === 'PENDING' || status === 'REVIEWING';
 }
 
-function findActiveReport(targetType: ReportTargetType, targetId: string): BuyerReport | undefined {
+function findActiveReport(
+  targetType: ReportTargetType,
+  targetId: string,
+  userEmail: string,
+): MockBuyerReport | undefined {
   return mockReports.find(
-    (r) => r.targetType === targetType && r.targetId === targetId && isActiveStatus(r.status),
+    (r) =>
+      r.targetType === targetType &&
+      r.targetId === targetId &&
+      r.userEmail.toLowerCase() === userEmail.toLowerCase() &&
+      isActiveStatus(r.status),
   );
 }
 
-function createReport(
+async function createReport(
   targetType: ReportTargetType,
   targetId: string,
   targetName: string,
   body: SubmitReportRequest,
-): BuyerReport {
-  if (findActiveReport(targetType, targetId)) {
+): Promise<BuyerReport> {
+  const user = await getMockProfileUser();
+  const userEmail = user?.email ?? '';
+
+  if (findActiveReport(targetType, targetId, userEmail)) {
     throw new Error('Ya enviaste un reporte sobre esto. Podés ver el estado en Perfil → Mis reportes.');
   }
 
-  const report: BuyerReport = {
+  const report: MockBuyerReport = {
+    userEmail,
     id: `mock-report-${reportSeq++}`,
     targetType,
     targetId,
@@ -100,14 +119,28 @@ export async function mockSubmitStoreReport(
 
 export async function mockFetchMyReports(): Promise<BuyerReport[]> {
   await delay(250);
-  return [...mockReports].sort(
+  const user = await getMockProfileUser();
+  const userEmail = user?.email ?? '';
+
+  const userReports = mockReports.filter(
+    (r) => r.userEmail.toLowerCase() === userEmail.toLowerCase(),
+  );
+
+  return [...userReports].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 }
 
 export async function mockFetchUnreadReportCount(): Promise<number> {
   await delay(150);
-  return mockReports.filter(
+  const user = await getMockProfileUser();
+  const userEmail = user?.email ?? '';
+
+  const userReports = mockReports.filter(
+    (r) => r.userEmail.toLowerCase() === userEmail.toLowerCase(),
+  );
+
+  return userReports.filter(
     (r) =>
       !r.seenByBuyer &&
       (r.status === 'RESOLVED' || r.status === 'DISMISSED') &&
@@ -117,8 +150,14 @@ export async function mockFetchUnreadReportCount(): Promise<number> {
 
 export async function mockMarkReportsSeen(): Promise<void> {
   await delay(100);
+  const user = await getMockProfileUser();
+  const userEmail = user?.email ?? '';
+
   for (const r of mockReports) {
-    if (r.status === 'RESOLVED' || r.status === 'DISMISSED') {
+    if (
+      r.userEmail.toLowerCase() === userEmail.toLowerCase() &&
+      (r.status === 'RESOLVED' || r.status === 'DISMISSED')
+    ) {
       r.seenByBuyer = true;
     }
   }
@@ -129,7 +168,10 @@ export async function mockFetchReportStatus(
   targetId: string,
 ): Promise<ReportStatusResponse> {
   await delay(150);
-  const active = findActiveReport(targetType, targetId);
+  const user = await getMockProfileUser();
+  const userEmail = user?.email ?? '';
+
+  const active = findActiveReport(targetType, targetId, userEmail);
   return {
     hasActiveReport: Boolean(active),
     reportId: active?.id ?? null,

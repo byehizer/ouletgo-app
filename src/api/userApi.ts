@@ -30,7 +30,10 @@ function parseUser(raw: unknown): User {
     throw new Error('Respuesta de usuario inválida.');
   }
   const o = raw as Record<string, unknown>;
-  const role = o['role'];
+  let role = o['role'];
+  if (role === 'CLIENT') {
+    role = 'BUYER';
+  }
   if (role !== 'BUYER') {
     throw new Error('Esta app es solo para compradores.');
   }
