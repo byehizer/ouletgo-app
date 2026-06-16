@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import MapView, { Marker, type Region } from 'react-native-maps';
+import MapView, { Marker, Callout, type Region } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { fetchNearbyStores, type NearbyStore } from '../../src/api/storeApi';
@@ -221,12 +221,18 @@ export default function MapScreen() {
           <Marker
             key={store.id}
             coordinate={{ latitude: store.latitude, longitude: store.longitude }}
-            title={store.name}
-            description={store.address}
             pinColor={Platform.OS === 'ios' ? (store.isOpenNow ? '#2B8FD4' : '#94A3B8') : undefined}
             onPress={() => handleMarkerPress(store)}
-            onCalloutPress={handleViewStore}
-          />
+            onSelect={() => handleMarkerPress(store)}
+          >
+            <Callout onPress={() => router.push(`/store/${store.id}`)}>
+              <View style={{ padding: 10, minWidth: 150, maxWidth: 220 }}>
+                <Text style={{ fontWeight: '600', fontSize: 14, color: '#0F172A' }}>{store.name}</Text>
+                <Text style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>{store.address}</Text>
+                <Text style={{ fontSize: 12, color: '#2B8FD4', fontWeight: '600', marginTop: 6 }}>Ver tienda →</Text>
+              </View>
+            </Callout>
+          </Marker>
         ))}
       </MapView>
       ) : (
