@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
+  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Text,
@@ -51,7 +52,11 @@ export function ImageGallery({ imageUrls, height = 280 }: ImageGalleryProps) {
               <Ionicons name="shirt-outline" size={64} color="#2B8FD4" />
             </View>
           ) : (
-            <View style={{ width, height, backgroundColor: '#F1F5F9' }} />
+            <Image
+              source={{ uri: item }}
+              style={{ width, height, backgroundColor: '#F1F5F9' }}
+              resizeMode="cover"
+            />
           )
         }
       />
