@@ -8,9 +8,9 @@ export function hasGoogleMapsKey(): boolean {
   return GOOGLE_MAPS_API_KEY.length > 0;
 }
 
-/** Provider Google Maps en Android (requiere key en app.config + rebuild), Apple Maps en iOS. */
+/** Provider Google Maps en iOS y Android (requiere key en app.config + rebuild). */
 export function getGoogleMapProvider(): Provider {
-  return Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined;
+  return PROVIDER_GOOGLE;
 }
 
 /** iframe embed para web — Maps Embed API. */
