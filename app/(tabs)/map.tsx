@@ -225,6 +225,7 @@ export default function MapScreen() {
             description={store.address}
             pinColor={Platform.OS === 'ios' ? (store.isOpenNow ? '#2B8FD4' : '#94A3B8') : undefined}
             onPress={() => handleMarkerPress(store)}
+            onCalloutPress={handleViewStore}
           />
         ))}
       </MapView>
