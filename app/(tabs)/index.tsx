@@ -40,6 +40,10 @@ import {
 
 const PAGE_SIZE = 10;
 
+// Variable en memoria para rastrear si ya se mostró la bienvenida en la sesión actual de la app.
+// Se reinicia automáticamente cuando la app se cierra por completo (cold launch).
+let welcomeShownThisSession = false;
+
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const columnGap = 12;
@@ -133,25 +137,14 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    void (async () => {
-      try {
-        const shown = await AsyncStorage.getItem('@outletgo:welcome_shown');
-        if (!shown) {
-          setWelcomeVisible(true);
-        }
-      } catch (err) {
-        console.error('Error reading AsyncStorage:', err);
-      }
-    })();
+    if (!welcomeShownThisSession) {
+      setWelcomeVisible(true);
+      welcomeShownThisSession = true;
+    }
   }, []);
 
-  const handleCloseWelcome = useCallback(async () => {
+  const handleCloseWelcome = useCallback(() => {
     setWelcomeVisible(false);
-    try {
-      await AsyncStorage.setItem('@outletgo:welcome_shown', 'true');
-    } catch (err) {
-      console.error('Error saving to AsyncStorage:', err);
-    }
   }, []);
 
   useEffect(() => {
