@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "name": "OutletGo Mobile",
+      "path": "."
+    },
+    {
+      "name": "OutletGo Web",
+      "path": "../outletgo-web"
+    }
+  ],
+  "settings": {}
+}

@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useFocusEffect } from 'expo-router';
 import { useCallback } from 'react';
 import {
   Alert,
@@ -14,11 +14,26 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CartEmptyState } from '../../src/components/CartEmptyState';
 import { CartStoreSection } from '../../src/components/CartStoreSection';
+import { LoadingScreen } from '../../src/components/LoadingScreen';
 import { useCart } from '../../src/context/CartContext';
+import { useAuth } from '../../src/context/AuthContext';
 import { formatARS } from '../../src/lib/format';
 import { Colors } from '../../src/theme/colors';
 
 export default function CartScreen() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!authLoading && !isAuthenticated) {
+        const t = setTimeout(() => {
+          router.replace('/(auth)/login?redirect=/cart');
+        }, 150);
+        return () => clearTimeout(t);
+      }
+    }, [authLoading, isAuthenticated])
+  );
+
   const insets = useSafeAreaInsets();
   const {
     groups,
@@ -32,6 +47,7 @@ export default function CartScreen() {
     clearCart,
   } = useCart();
 
+  if (authLoading || !isAuthenticated) return <LoadingScreen />;
   const handleClearAll = useCallback(() => {
     Alert.alert('Vaciar carrito', '¿Querés quitar todos los productos del carrito?', [
       { text: 'Cancelar', style: 'cancel' },

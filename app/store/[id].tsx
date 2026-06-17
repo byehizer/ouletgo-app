@@ -33,6 +33,7 @@ import { StoreProductFiltersSheet } from '../../src/components/StoreProductFilte
 import { useDebounce } from '../../src/lib/useDebounce';
 import { getCurrentCoordinates, type Coordinates } from '../../src/lib/location';
 import { openChatWithStore } from '../../src/lib/openChat';
+import { useAuth } from '../../src/context/AuthContext';
 import { parsePriceInput } from '../../src/types/catalogFilters';
 import { Colors } from '../../src/theme/colors';
 import {
@@ -47,6 +48,7 @@ export default function StoreScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
+  const { isAuthenticated } = useAuth();
 
   const storeId = typeof id === 'string' ? id : '';
   const columnGap = 12;
@@ -232,7 +234,14 @@ export default function StoreScreen() {
     router.push(`/product/${product.id}`);
   }, []);
 
-  const visibleReviews = store ? getVisibleReviews(store.reviews) : [];
+  const visibleReviews = useMemo(() => {
+    const visible = store ? getVisibleReviews(store.reviews) : [];
+    return [...visible].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }, [store]);
+
+  const limitedReviews = useMemo(() => visibleReviews.slice(0, 4), [visibleReviews]);
 
   const emptyMessage = useMemo(() => {
     if (debouncedSearch.trim()) {
@@ -252,6 +261,15 @@ export default function StoreScreen() {
     ),
     [cardWidth, handleProductPress],
   );
+
+  const handleChatPress = useCallback(() => {
+    if (!store) return;
+    if (!isAuthenticated) {
+      router.push(`/(auth)/login?redirect=/store/${store.id}`);
+      return;
+    }
+    void openChatWithStore(store.id);
+  }, [store, isAuthenticated]);
 
   if (loadingStore && !store) {
     return (
@@ -305,7 +323,7 @@ export default function StoreScreen() {
             <StoreHeader store={store} />
             <View style={{ paddingHorizontal: horizontalPad, marginTop: 12 }}>
               <TouchableOpacity
-                onPress={() => void openChatWithStore(store.id)}
+                onPress={handleChatPress}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -335,7 +353,34 @@ export default function StoreScreen() {
                 >
                   Reseñas de la tienda ({visibleReviews.length})
                 </Text>
-                <ReviewList reviews={visibleReviews} />
+                <ReviewList reviews={limitedReviews} />
+                {visibleReviews.length > 4 ? (
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: '/store/reviews',
+                        params: { storeId: store.id, storeName: store.name },
+                      })
+                    }
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingVertical: 10,
+                      marginTop: 8,
+                      gap: 4,
+                      borderWidth: 1,
+                      borderColor: '#E2E8F0',
+                      borderRadius: 8,
+                      backgroundColor: '#FFFFFF',
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#2B8FD4' }}>
+                      Ver más reseñas ({visibleReviews.length - 4} más)
+                    </Text>
+                    <Ionicons name="chevron-forward" size={16} color="#2B8FD4" />
+                  </TouchableOpacity>
+                ) : null}
               </View>
             ) : null}
 

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
+import { BrandLogo } from '../../src/components/BrandLogo';
 import { CartButton } from '../../src/components/CartButton';
 import { MessagesTabIcon } from '../../src/components/MessagesTabIcon';
 import { Colors } from '../../src/theme/colors';
@@ -30,6 +31,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Inicio',
+          headerTitle: () => <BrandLogo variant="logotype" width={110} style={{ paddingLeft: 8 }} />,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),

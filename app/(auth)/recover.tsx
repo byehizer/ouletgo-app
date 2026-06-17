@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuthBrandHeader } from '../../src/components/auth/AuthBrandHeader';
 import { AuthButton } from '../../src/components/auth/AuthButton';
 import { AuthCard, AuthErrorBox, AuthSubtitle, AuthTitle } from '../../src/components/auth/AuthLayout';
 import { AuthTextInput } from '../../src/components/auth/AuthTextInput';
@@ -44,6 +45,7 @@ export default function RecoverScreen() {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F7FA' }}>
         <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
+          <AuthBrandHeader variant="isotype" showTagline={false} />
           <AuthCard>
             <AuthTitle>Revisá tu correo</AuthTitle>
             <AuthSubtitle>
@@ -71,6 +73,7 @@ export default function RecoverScreen() {
           }}
           keyboardShouldPersistTaps="handled"
         >
+          <AuthBrandHeader variant="isotype" showTagline={false} />
           <AuthCard>
             <AuthTitle>Recuperar contraseña</AuthTitle>
             <AuthSubtitle>Te enviaremos un enlace si el email está registrado</AuthSubtitle>

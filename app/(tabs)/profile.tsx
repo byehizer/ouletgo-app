@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
+import { Redirect, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   Alert,
@@ -16,17 +16,19 @@ import { fetchUnreadReportCount } from '../../src/api/reportApi';
 import { deactivateAccount } from '../../src/api/userApi';
 import { AuthButton } from '../../src/components/auth/AuthButton';
 import { ProfileMenuCard } from '../../src/components/profile/ProfileMenuCard';
+import { LoadingScreen } from '../../src/components/LoadingScreen';
 import { getAuthErrorMessage, useAuth } from '../../src/context/AuthContext';
 import { Colors } from '../../src/theme/colors';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
   const [favCount, setFavCount] = useState(0);
   const [unreadReports, setUnreadReports] = useState(0);
 
   const fullName = [user?.name, user?.lastName].filter(Boolean).join(' ') || 'Comprador';
 
   const loadCounts = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const [p, s, unread] = await Promise.all([
         fetchFavoriteProducts(),
@@ -39,13 +41,22 @@ export default function ProfileScreen() {
       setFavCount(0);
       setUnreadReports(0);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   useFocusEffect(
     useCallback(() => {
+      if (!authLoading && !isAuthenticated) {
+        const t = setTimeout(() => {
+          router.replace(('/(auth)/login?redirect=' + encodeURIComponent('/profile')) as any);
+        }, 150);
+        return () => clearTimeout(t);
+      }
+      if (!isAuthenticated) return;
       void loadCounts();
-    }, [loadCounts]),
+    }, [loadCounts, authLoading, isAuthenticated]),
   );
+
+  if (authLoading || !isAuthenticated) return <LoadingScreen />;
 
   const handleDeactivate = () => {
     Alert.alert(

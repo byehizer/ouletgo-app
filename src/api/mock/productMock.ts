@@ -117,3 +117,31 @@ export async function mockFetchProductDetail(productId: string): Promise<Product
     reviews: buildReviews(productId),
   };
 }
+
+export async function mockFetchSimilarProducts(productId: string): Promise<any[]> {
+  await delay(250);
+  const idx = parseMockProductIndex(productId);
+
+  const similarProducts: any[] = [];
+  for (let i = 1; i <= 4; i++) {
+    const similarIdx = idx + i * 2;
+    const storeIdx = similarIdx % STORE_NAMES.length;
+    const storeName = STORE_NAMES[storeIdx] ?? 'Tienda';
+    const storeId = `mock-store-${storeIdx + 1}`;
+    const price = 8500 + similarIdx * 1250;
+
+    similarProducts.push({
+      id: `mock-prod-${similarIdx}`,
+      name: getProductName(similarIdx),
+      thumbnailUrl: `https://picsum.photos/seed/prod-${similarIdx}/300/300`,
+      price,
+      storeId,
+      storeName,
+      ratingAvg: similarIdx % 3 === 0 ? null : 4.5,
+      ratingCount: similarIdx * 3,
+    });
+  }
+
+  return similarProducts;
+}
+

@@ -9,6 +9,11 @@ module.exports = () => {
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
+    androidStatusBar: {
+      barStyle: 'dark-content',
+      backgroundColor: '#ffffff',
+      translucent: false,
+    },
     splash: {
       image: './assets/splash.png',
       resizeMode: 'contain',
@@ -81,6 +86,9 @@ module.exports = () => {
         {
           photosPermission:
             'OutletGo accede a tus fotos para buscar productos y actualizar tu perfil.',
+          colors: {
+            cropToolbarColor: '#ffffff',
+          },
         },
       ],
     ],

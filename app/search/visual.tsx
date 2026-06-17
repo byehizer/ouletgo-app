@@ -9,6 +9,7 @@ import {
   Image,
   Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -80,28 +81,33 @@ export default function VisualSearchScreen() {
   const [state, setState] = useState<SearchState>({ phase: 'idle' });
 
   const pickAndSearch = async (fromCamera: boolean) => {
+    let uri: string | null = null;
     try {
       let result: ImagePicker.ImagePickerResult;
-
-      if (fromCamera) {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permiso necesario', 'Permití el acceso a la cámara para buscar por foto.');
-          return;
+      try {
+        StatusBar.setHidden(true, 'fade');
+        if (fromCamera) {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permiso necesario', 'Permití el acceso a la cámara para buscar por foto.');
+            return;
+          }
+          result = await ImagePicker.launchCameraAsync(IMAGE_PICKER_OPTIONS);
+        } else {
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== 'granted') {
+            Alert.alert('Permiso necesario', 'Permití el acceso a la galería para buscar por foto.');
+            return;
+          }
+          result = await ImagePicker.launchImageLibraryAsync(IMAGE_PICKER_OPTIONS);
         }
-        result = await ImagePicker.launchCameraAsync(IMAGE_PICKER_OPTIONS);
-      } else {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permiso necesario', 'Permití el acceso a la galería para buscar por foto.');
-          return;
-        }
-        result = await ImagePicker.launchImageLibraryAsync(IMAGE_PICKER_OPTIONS);
+      } finally {
+        StatusBar.setHidden(false, 'fade');
       }
 
       if (result.canceled || !result.assets[0]) return;
 
-      const uri = result.assets[0].uri;
+      uri = result.assets[0].uri;
       setState({ phase: 'searching', imageUri: uri });
 
       const searchResult = await searchByImage(uri);
@@ -111,7 +117,7 @@ export default function VisualSearchScreen() {
       setState((prev) =>
         prev.phase === 'idle'
           ? { phase: 'error', imageUri: '', message: msg }
-          : { phase: 'error', imageUri: (prev as { imageUri: string }).imageUri, message: msg },
+          : { phase: 'error', imageUri: uri ?? (prev as { imageUri: string }).imageUri ?? '', message: msg },
       );
     }
   };

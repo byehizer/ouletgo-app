@@ -10,7 +10,7 @@
  */
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
-import { router, Stack } from 'expo-router';
+import { router, Stack, useFocusEffect } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -50,6 +50,8 @@ import { useCart } from '../../src/context/CartContext';
 import { cartFingerprint, clearIdempotencyKey, getOrCreateIdempotencyKey } from '../../src/lib/idempotency';
 import { formatARS } from '../../src/lib/format';
 import { Colors } from '../../src/theme/colors';
+import { useAuth } from '../../src/context/AuthContext';
+import { LoadingScreen } from '../../src/components/LoadingScreen';
 
 // ---------------------------------------------------------------------------
 // Internal state types
@@ -336,8 +338,23 @@ function ResultScreen({
 // ---------------------------------------------------------------------------
 
 export default function CheckoutScreen() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!authLoading && !isAuthenticated) {
+        const t = setTimeout(() => {
+          router.replace('/(auth)/login?redirect=/checkout');
+        }, 150);
+        return () => clearTimeout(t);
+      }
+    }, [authLoading, isAuthenticated])
+  );
+
   const insets = useSafeAreaInsets();
   const { items, groups, subtotal, clearCart, isHydrated } = useCart();
+
+  if (authLoading || !isAuthenticated) return <LoadingScreen />;
 
   // -- Phase --
   const [phase, setPhase] = useState<CheckoutPhase>('form');

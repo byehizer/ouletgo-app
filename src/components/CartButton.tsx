@@ -3,15 +3,23 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { Colors } from '../theme/colors';
 
 export function CartButton() {
   const { itemCount } = useCart();
+  const { isAuthenticated } = useAuth();
 
   return (
     <Pressable
       style={styles.btn}
-      onPress={() => router.push('/cart')}
+      onPress={() => {
+        if (isAuthenticated) {
+          router.push('/cart');
+        } else {
+          router.push('/(auth)/login?redirect=/cart');
+        }
+      }}
       accessibilityLabel="Carrito"
     >
       <Ionicons name="cart-outline" size={24} color={Colors.text.primary} />

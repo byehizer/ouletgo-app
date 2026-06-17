@@ -9,6 +9,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -70,14 +71,19 @@ export default function EditProfileScreen() {
       Alert.alert('Permiso necesario', 'Permití el acceso a fotos para cambiar tu avatar.');
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.85,
-    });
-    if (!result.canceled && result.assets[0]) {
-      setLocalAvatarUri(result.assets[0].uri);
+    try {
+      StatusBar.setHidden(true, 'fade');
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+      if (!result.canceled && result.assets[0]) {
+        setLocalAvatarUri(result.assets[0].uri);
+      }
+    } finally {
+      StatusBar.setHidden(false, 'fade');
     }
   };
 

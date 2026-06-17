@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   View,
@@ -69,54 +71,60 @@ export default function ConversationScreen() {
   return (
     <>
       <Stack.Screen options={{ title: meta?.storeName ?? 'Chat' }} />
-      <View style={styles.container}>
-        {meta?.productName ? (
-          <View style={styles.contextBanner}>
-            <Ionicons name="pricetag-outline" size={16} color={Colors.brand.dark} />
-            <Text style={styles.contextText} numberOfLines={1}>
-              Consulta sobre: {meta.productName}
-            </Text>
-          </View>
-        ) : null}
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: Colors.surface.base }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 80}
+      >
+        <View style={styles.container}>
+          {meta?.productName ? (
+            <View style={styles.contextBanner}>
+              <Ionicons name="pricetag-outline" size={16} color={Colors.brand.dark} />
+              <Text style={styles.contextText} numberOfLines={1}>
+                Consulta sobre: {meta.productName}
+              </Text>
+            </View>
+          ) : null}
 
-        {loadingInitial ? (
-          <View style={styles.centered}>
-            <ActivityIndicator size="large" color={Colors.brand.DEFAULT} />
-          </View>
-        ) : (
-          <FlatList
-            ref={listRef}
-            data={messages}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <MessageBubble message={item} />}
-            contentContainerStyle={[
-              styles.messageList,
-              { paddingTop: 12, paddingBottom: 8 },
-            ]}
-            onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
-            ListEmptyComponent={
-              <View style={styles.emptyChat}>
-                <Text style={styles.emptyChatText}>
-                  Escribí tu primer mensaje a la tienda.
-                </Text>
-              </View>
-            }
+          {loadingInitial ? (
+            <View style={styles.centered}>
+              <ActivityIndicator size="large" color={Colors.brand.DEFAULT} />
+            </View>
+          ) : (
+            <FlatList
+              ref={listRef}
+              data={messages}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => <MessageBubble message={item} />}
+              contentContainerStyle={[
+                styles.messageList,
+                { paddingTop: 12, paddingBottom: 8 },
+              ]}
+              onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
+              ListEmptyComponent={
+                <View style={styles.emptyChat}>
+                  <Text style={styles.emptyChatText}>
+                    Escribí tu primer mensaje a la tienda.
+                  </Text>
+                </View>
+              }
+            />
+          )}
+
+          {error ? (
+            <View style={styles.errorStrip}>
+              <Text style={styles.errorStripText}>{error}</Text>
+            </View>
+          ) : null}
+
+          <ChatComposer
+            onSendText={sendText}
+            onSendImage={sendImage}
+            sending={sending}
+            disabled={loadingInitial}
           />
-        )}
-
-        {error ? (
-          <View style={styles.errorStrip}>
-            <Text style={styles.errorStripText}>{error}</Text>
-          </View>
-        ) : null}
-
-        <ChatComposer
-          onSendText={sendText}
-          onSendImage={sendImage}
-          sending={sending}
-          disabled={loadingInitial}
-        />
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </>
   );
 }

@@ -1,0 +1,102 @@
+# OutletGo Mobile — Reglas del Proyecto y Sistema de Diseño
+
+Este archivo unifica las directrices de desarrollo, flujo de trabajo, decisiones tecnológicas y el sistema de diseño para la aplicación móvil de OutletGo.
+
+---
+
+## 1. NORMAS DE TRABAJO Y COMPORTAMIENTO DEL AGENTE
+
+### Ritmo de Trabajo
+* **Un paso a la vez:** Nunca avances al siguiente paso de desarrollo sin confirmación explícita del usuario.
+* **Un archivo a la vez:** Si un paso requiere varios archivos, crea el primero, explícalo, espera confirmación y luego continúa.
+* Nunca generes código de más "para adelantar".
+
+### Estructura de Respuesta
+Al inicio de cada respuesta de desarrollo, muestra siempre el estado de los pasos:
+```
+📍 PASO ACTUAL: [número y nombre]
+✅ COMPLETADOS: [lista de pasos terminados]
+⏭️ SIGUIENTE: [nombre del próximo paso]
+```
+
+Al final de cada respuesta de desarrollo, pregunta siempre:
+"¿Entendiste cómo funciona esta parte? ¿Alguna duda antes de continuar?"
+
+### Explicación Obligatoria
+Always include these four sections after presenting new code:
+1. **¿Qué hace este código?** (En español simple, sin asumir conocimiento previo).
+2. **¿Por qué se hace así en React Native y no de otra manera?** (Diferencias con desarrollo web si aplica).
+3. **¿Cómo encaja en el proyecto?** (Conexión con el resto de componentes y servicios).
+4. **¿Qué errores comunes pueden aparecer en mobile?** (Problemas frecuentes y resolución).
+
+### Restricciones Críticas (Prohibido)
+* No uses `any` en TypeScript bajo ninguna circunstancia (usar tipado estricto).
+* No uses AsyncStorage para almacenar el token JWT (usar obligatoriamente `SecureStore`).
+* No instales ni utilices el SDK de Supabase (`@supabase/supabase-js`). La base de datos y la auth de Supabase son invisibles para la app y se manejan 100% a través del Backend API.
+* No utilices librerías como Axios, Redux, Zustand o React Query. El estado global se maneja únicamente mediante **Context API** y las peticiones con `fetch` nativo.
+
+---
+
+## 2. STACK TECNOLÓGICO Y ARQUITECTURA
+
+* **Framework:** React Native + Expo (Managed Workflow)
+* **Routing:** Expo Router (basado en archivos)
+* **Estilos:** NativeWind (Tailwind CSS para React Native)
+* **Almacenamiento:** Expo SecureStore (JWT token) + AsyncStorage (usuario, carrito local)
+* **Auth Externo:** expo-web-browser + deep links a `outletgo://callback?token=...`
+* **Mapas:** react-native-maps (Google Maps SDK configurado en app.json)
+* **Pagos:** Mercado Pago Checkout Pro (a través de WebBrowser)
+* **Notificaciones:** expo-notifications + Registro de Expo Push Token
+* **Debounce:** Mínimo 400ms para búsquedas (`useDebounce`)
+
+---
+
+## 3. SISTEMA DE DISEÑO (LIGHT MODE ESTRICTO)
+
+La aplicación utiliza **únicamente Light Mode**. No se admite modo oscuro ni dependencias del tema del sistema (`useColorScheme()`).
+
+### Paleta de Colores
+* **Azul Primario (Acento/Botones):** `#2B8FD4`
+* **Azul Oscuro (Links/Hover):** `#1A3F7A`
+* **Azul Claro (Activos/Iconos):** `#5AAEE0`
+* **Azul Fondo (Badges/Chips):** `#E8F4FD`
+* **Success:** Fondo `#f0fdf4`, Texto `#16a34a`
+* **Warning:** Fondo `#fffbeb`, Texto `#d97706`
+* **Danger:** Fondo `#fef2f2`, Texto `#dc2626`
+* **Superficie General (Fondo App):** `#f5f7fa`
+* **Superficie de Tarjetas/Modales (Cards):** `#ffffff`
+
+### Tipografía
+* **Títulos (Display/Section):** `Sora` (Weights 600 y 700)
+* **Textos/UI/Labels:** `Inter` (Weights 400 y 500)
+
+### Componentes y Espaciados
+* **Border Radius:** Tarjetas `rounded-xl` (12px), Inputs y Botones `rounded-lg` (8px).
+* **Dimensiones Touch:** Altura de inputs y botones principales `h-12` (48px) para optimización táctil.
+* **Iconografía:** Usar `@expo/vector-icons` utilizando principalmente la familia `Ionicons`.
+
+---
+
+## 4. ESTADO DE LOS PASOS DEL PROYECTO
+
+| # | Paso | Estado |
+|---|---|---|
+| 1 | Setup del proyecto, reglas del agente y Design System mobile | ✅ Completado |
+| 2 | Capa de red (fetch + SecureStore + 401 global) y tipos compartidos | ✅ Completado |
+| 3 | Autenticación (AuthContext + pantallas + Google OAuth) | ✅ Completado |
+| 4 | Navegación principal (Tab Bar + carrito en header) | ✅ Completado |
+| 5 | Catálogo: productos paginados + categorías | ✅ Completado |
+| 6 | Búsqueda + filtros avanzados (con ubicación PostGIS) | ✅ Completado |
+| 7 | Detalle de producto (variaciones, stock, reseñas, carrito) | ✅ Completado |
+| 8 | Perfil de la tienda (View Store) | ✅ Completado |
+| 9 | Mapa de locales cercanos (react-native-maps) | ✅ Completado |
+| 10 | Carrito multitienda | ✅ Completado |
+| 11 | Checkout + Mercado Pago (Checkout Pro) | ✅ Completado |
+| 12 | Pedidos (historial + detalle de slices) | ✅ Completado |
+| 13 | Notificaciones push (Expo Notifications) | ✅ Completado |
+| 14 | Chat comprador–vendedor (polling) | ✅ Completado |
+| 15 | Reseñas (crear post-compra) | ✅ Completado |
+| 16 | Perfil de usuario (editar + favoritos) | ✅ Completado |
+| 17 | Búsqueda visual con Google Lens | ✅ Completado |
+| 18 | Reportar producto / tienda | ✅ Completado |
+| 19 | Robustez y build (offline, EAS APK, OTA) | ✅ Completado |

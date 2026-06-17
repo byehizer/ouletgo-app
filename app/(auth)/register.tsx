@@ -1,14 +1,17 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useState, useEffect } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   Text,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuthBrandHeader } from '../../src/components/auth/AuthBrandHeader';
 import { AuthButton } from '../../src/components/auth/AuthButton';
 import { AuthCard, AuthErrorBox, AuthSubtitle, AuthTitle } from '../../src/components/auth/AuthLayout';
 import { AuthTextInput } from '../../src/components/auth/AuthTextInput';
@@ -18,12 +21,36 @@ const MIN_PASSWORD_LENGTH = 8;
 
 export default function RegisterScreen() {
   const { register } = useAuth();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      if (redirect === '/profile' || redirect === '/orders' || redirect === '/messages') {
+        router.replace('/(tabs)');
+        return true;
+      }
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [redirect]);
+
+  const handleBack = () => {
+    if (redirect === '/profile' || redirect === '/orders' || redirect === '/messages') {
+      router.replace('/(tabs)');
+    } else if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
 
   const handleRegister = async () => {
     setError(null);
@@ -47,7 +74,7 @@ export default function RegisterScreen() {
         lastName: trimmedLastName,
         email: trimmedEmail,
         password,
-      });
+      }, redirect);
     } catch (err) {
       setError(getAuthErrorMessage(err));
     } finally {
@@ -56,15 +83,51 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F7FA' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F7FA', position: 'relative' }}>
+      {/* Botón Volver */}
+      <Pressable
+        onPress={handleBack}
+        style={({ pressed }) => [
+          {
+            position: 'absolute',
+            top: Platform.OS === 'ios' ? 12 : 16,
+            left: 16,
+            zIndex: 10,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 8,
+            backgroundColor: '#ffffff',
+            borderWidth: 1,
+            borderColor: '#E2E8F0',
+            shadowColor: '#0F172A',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.04,
+            shadowRadius: 4,
+            elevation: 1,
+          },
+          pressed && { opacity: 0.8 },
+        ]}
+      >
+        <Ionicons name="arrow-back" size={18} color="#475569" />
+        <Text style={{ fontSize: 13, fontWeight: '600', color: '#475569' }}>Volver</Text>
+      </Pressable>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, paddingVertical: 32 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'center',
+            paddingHorizontal: 20,
+            paddingVertical: 32,
+          }}
           keyboardShouldPersistTaps="handled"
         >
+          <AuthBrandHeader variant="isotype" showTagline={false} />
           <AuthCard>
             <AuthTitle>Crear cuenta</AuthTitle>
             <AuthSubtitle>Registrate como comprador en OutletGo</AuthSubtitle>

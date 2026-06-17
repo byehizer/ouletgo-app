@@ -11,10 +11,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import {
   fetchProductDetail,
+  fetchSimilarProducts,
   getVisibleReviews,
   type ProductDetail,
   type ProductVariation,
 } from '../../src/api/productApi';
+import type { CatalogProduct } from '../../src/api/catalogApi';
 import { FavoriteButton } from '../../src/components/FavoriteButton';
 import { LoadingScreen } from '../../src/components/LoadingScreen';
 import { ReportIconButton } from '../../src/components/ReportIconButton';
@@ -24,7 +26,9 @@ import { ImageGallery } from '../../src/components/ImageGallery';
 import { RatingStars } from '../../src/components/RatingStars';
 import { ReviewList } from '../../src/components/ReviewList';
 import { VariationPicker } from '../../src/components/VariationPicker';
+import { ProductCard } from '../../src/components/ProductCard';
 import { useCart } from '../../src/context/CartContext';
+import { useAuth } from '../../src/context/AuthContext';
 import { formatARS } from '../../src/lib/format';
 import { openChatWithStore } from '../../src/lib/openChat';
 import { Colors } from '../../src/theme/colors';
@@ -34,8 +38,10 @@ export default function ProductDetailScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { addItem } = useCart();
+  const { isAuthenticated } = useAuth();
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [similarProducts, setSimilarProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
@@ -63,6 +69,18 @@ export default function ProductDetailScreen() {
         setError(err instanceof Error ? err.message : 'No se pudo cargar el producto.');
       } finally {
         setLoading(false);
+      }
+    })();
+  }, [productId]);
+
+  useEffect(() => {
+    if (!productId) return;
+    void (async () => {
+      try {
+        const data = await fetchSimilarProducts(productId);
+        setSimilarProducts(data);
+      } catch {
+        setSimilarProducts([]);
       }
     })();
   }, [productId]);
@@ -109,6 +127,10 @@ export default function ProductDetailScreen() {
   );
 
   const handleAddToCart = useCallback(() => {
+    if (!isAuthenticated) {
+      router.push(`/(auth)/login?redirect=/product/${id}`);
+      return;
+    }
     if (!product || !selectedVariation || selectedVariation.stock <= 0) return;
 
     const label = [selectedVariation.size, selectedVariation.color]
@@ -132,7 +154,16 @@ export default function ProductDetailScreen() {
 
     setCartMessage('Agregado al carrito');
     setTimeout(() => setCartMessage(null), 2500);
-  }, [addItem, product, selectedVariation]);
+  }, [addItem, product, selectedVariation, isAuthenticated, id]);
+
+  const handleChatPress = useCallback(() => {
+    if (!product) return;
+    if (!isAuthenticated) {
+      router.push(`/(auth)/login?redirect=/product/${product.id}`);
+      return;
+    }
+    void openChatWithStore(product.storeId, product.id);
+  }, [product, isAuthenticated]);
 
   if (loading) return <LoadingScreen />;
 
@@ -149,7 +180,7 @@ export default function ProductDetailScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F5F7FA' }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 160 + insets.bottom }}>
         <ImageGallery imageUrls={product.imageUrls} />
 
         <View style={{ padding: 20 }}>
@@ -225,6 +256,28 @@ export default function ProductDetailScreen() {
             />
           </View>
 
+          {similarProducts.length > 0 ? (
+            <View style={{ marginTop: 28 }}>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A', marginBottom: 12 }}>
+                Productos similares
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 12 }}
+              >
+                {similarProducts.map((item) => (
+                  <View key={item.id} style={{ width: 150 }}>
+                    <ProductCard
+                      product={item}
+                      onPress={(p) => router.push(`/product/${p.id}`)}
+                    />
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          ) : null}
+
           <View style={{ marginTop: 28 }}>
             <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A', marginBottom: 12 }}>
               Reseñas ({visibleReviews.length})
@@ -264,7 +317,7 @@ export default function ProductDetailScreen() {
         ) : null}
 
         <Pressable
-          onPress={() => void openChatWithStore(product.storeId, product.id)}
+          onPress={handleChatPress}
           style={{
             height: 44,
             borderRadius: 10,

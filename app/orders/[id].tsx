@@ -98,6 +98,19 @@ function ShippingTrackingCard({
   );
 }
 
+function getShortOrderId(id: string): string {
+  if (id.startsWith('ORD-MOCK-')) {
+    return id.replace('ORD-MOCK-', '');
+  }
+  if (id.startsWith('ORD-')) {
+    return id.replace('ORD-', '');
+  }
+  if (id.includes('-') && id.length > 20) {
+    return id.split('-')[0]?.toUpperCase() ?? id.slice(0, 8).toUpperCase();
+  }
+  return id.slice(0, 8).toUpperCase();
+}
+
 export default function OrderDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const orderId = typeof id === 'string' ? id : '';
@@ -217,7 +230,7 @@ export default function OrderDetailScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: `Pedido #${order.id.replace('ORD-MOCK-', '').replace('ORD-', '')}` }} />
+      <Stack.Screen options={{ title: `Pedido #${getShortOrderId(order.id)}` }} />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}

@@ -4,8 +4,6 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -69,45 +67,40 @@ export function ChatComposer({
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
-    >
-      <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
-        <TouchableOpacity
-          onPress={() => void handlePickImage()}
-          disabled={busy}
-          style={styles.iconBtn}
-          accessibilityLabel="Adjuntar imagen"
-        >
-          <Ionicons name="image-outline" size={24} color={busy ? Colors.text.muted : Colors.brand.DEFAULT} />
-        </TouchableOpacity>
+    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
+      <TouchableOpacity
+        onPress={() => void handlePickImage()}
+        disabled={busy}
+        style={styles.iconBtn}
+        accessibilityLabel="Adjuntar imagen"
+      >
+        <Ionicons name="image-outline" size={24} color={busy ? Colors.text.muted : Colors.brand.DEFAULT} />
+      </TouchableOpacity>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Escribí un mensaje..."
-          placeholderTextColor={Colors.text.muted}
-          value={text}
-          onChangeText={setText}
-          editable={!busy}
-          multiline
-          maxLength={2000}
-        />
+      <TextInput
+        style={styles.input}
+        placeholder="Escribí un mensaje..."
+        placeholderTextColor={Colors.text.muted}
+        value={text}
+        onChangeText={setText}
+        editable={!busy}
+        multiline
+        maxLength={2000}
+      />
 
-        <TouchableOpacity
-          onPress={() => void handleSend()}
-          disabled={busy || !text.trim()}
-          style={[styles.sendBtn, (!text.trim() || busy) && styles.sendBtnDisabled]}
-          accessibilityLabel="Enviar mensaje"
-        >
-          {sending ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Ionicons name="send" size={20} color="#fff" />
-          )}
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+      <TouchableOpacity
+        onPress={() => void handleSend()}
+        disabled={busy || !text.trim()}
+        style={[styles.sendBtn, (!text.trim() || busy) && styles.sendBtnDisabled]}
+        accessibilityLabel="Enviar mensaje"
+      >
+        {sending ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Ionicons name="send" size={20} color="#fff" />
+        )}
+      </TouchableOpacity>
+    </View>
   );
 }
 

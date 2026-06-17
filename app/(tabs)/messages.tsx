@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 
 import { fetchConversations, type ConversationListItem } from '../../src/api/chatApi';
+import { useAuth } from '../../src/context/AuthContext';
 import { useMessages } from '../../src/context/MessagesContext';
 import { useConversationsPolling } from '../../src/hooks/useConversationsPolling';
 import { formatDateTime } from '../../src/lib/format';
@@ -91,6 +92,7 @@ function ConversationCard({
 }
 
 export default function MessagesScreen() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { syncConversations } = useMessages();
   const [conversations, setConversations] = useState<ConversationListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,6 +109,7 @@ export default function MessagesScreen() {
   );
 
   const load = useCallback(async () => {
+    if (!isAuthenticated) return;
     try {
       const page = await fetchConversations(0, 30);
       applyList(page.content);
@@ -114,10 +117,18 @@ export default function MessagesScreen() {
     } catch (e) {
       setError(e instanceof Error ? e.message : 'No se pudieron cargar las conversaciones.');
     }
-  }, [applyList]);
+  }, [applyList, isAuthenticated]);
 
   useFocusEffect(
     useCallback(() => {
+      if (!authLoading && !isAuthenticated) {
+        const t = setTimeout(() => {
+          router.replace(('/(auth)/login?redirect=' + encodeURIComponent('/messages')) as any);
+        }, 150);
+        return () => clearTimeout(t);
+      }
+      if (!isAuthenticated) return;
+
       setFocused(true);
       void (async () => {
         setLoading(true);
@@ -125,11 +136,11 @@ export default function MessagesScreen() {
         setLoading(false);
       })();
       return () => setFocused(false);
-    }, [load]),
+    }, [load, authLoading, isAuthenticated]),
   );
 
   useConversationsPolling({
-    enabled: focused,
+    enabled: focused && isAuthenticated,
     onUpdate: applyList,
   });
 
@@ -139,7 +150,7 @@ export default function MessagesScreen() {
     setRefreshing(false);
   }, [load]);
 
-  if (loading) {
+  if (authLoading || !isAuthenticated || loading) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" color={Colors.brand.DEFAULT} />

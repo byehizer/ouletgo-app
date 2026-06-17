@@ -1,7 +1,8 @@
 import { USE_MOCKS } from '../config/env';
 
 import { apiClient } from './client';
-import { mockFetchProductDetail } from './mock/productMock';
+import { mockFetchProductDetail, mockFetchSimilarProducts } from './mock/productMock';
+import type { CatalogProduct } from './catalogApi';
 
 export interface ProductVariation {
   id: string;
@@ -141,4 +142,56 @@ function parseProductDetail(raw: unknown): ProductDetail {
 
 export function getVisibleReviews(reviews: ProductReview[]): ProductReview[] {
   return reviews.filter((r) => r.isVisible);
+}
+
+function parseCatalogProduct(raw: unknown): CatalogProduct | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const id = o['id'];
+  const name = o['name'];
+  const price = o['price'];
+  const storeId = o['storeId'] ?? o['store_id'];
+  const storeName = o['storeName'] ?? o['store_name'];
+
+  if (
+    typeof id !== 'string' ||
+    typeof name !== 'string' ||
+    typeof price !== 'number' ||
+    typeof storeId !== 'string' ||
+    typeof storeName !== 'string'
+  ) {
+    return null;
+  }
+
+  const thumbnailUrl = o['thumbnailUrl'] ?? o['thumbnail_url'];
+  const ratingAvg = o['ratingAvg'] ?? o['rating_avg'];
+  const ratingCount = o['ratingCount'] ?? o['rating_count'];
+
+  return {
+    id,
+    name,
+    thumbnailUrl: typeof thumbnailUrl === 'string' ? thumbnailUrl : null,
+    price,
+    storeId,
+    storeName,
+    ratingAvg: typeof ratingAvg === 'number' ? ratingAvg : null,
+    ratingCount: typeof ratingCount === 'number' ? ratingCount : 0,
+    distanceKm: typeof o['distanceKm'] === 'number' ? o['distanceKm'] : null,
+  };
+}
+
+export function parseCatalogProducts(raw: unknown): CatalogProduct[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(parseCatalogProduct).filter((p): p is CatalogProduct => p !== null);
+}
+
+export async function fetchSimilarProducts(productId: string): Promise<CatalogProduct[]> {
+  if (USE_MOCKS) {
+    return mockFetchSimilarProducts(productId);
+  }
+
+  const raw = await apiClient.get<unknown>(`${PRODUCT_PATH}/${productId}/similar`, {
+    skipAuth: true,
+  });
+  return parseCatalogProducts(raw);
 }

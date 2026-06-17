@@ -42,8 +42,8 @@ interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (data: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  login: (data: LoginRequest, redirectPath?: string) => Promise<void>;
+  register: (data: RegisterRequest, redirectPath?: string) => Promise<void>;
   logout: () => Promise<void>;
   recoverPassword: (email: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -67,8 +67,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.replace('/(auth)/login');
   }, []);
 
-  const redirectToApp = useCallback(() => {
-    router.replace('/(tabs)');
+  const redirectToApp = useCallback((customPath?: string) => {
+    if (customPath) {
+      router.replace(customPath as any);
+    } else {
+      router.replace('/(tabs)');
+    }
   }, []);
 
   const handleSessionExpired = useCallback(async () => {
@@ -126,21 +130,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const login = useCallback(
-    async (data: LoginRequest) => {
+    async (data: LoginRequest, redirectPath?: string) => {
       const { token, user: loggedUser } = await loginWithEmail(data);
       await persistSession(token, loggedUser);
       setUser(loggedUser);
-      redirectToApp();
+      redirectToApp(redirectPath);
     },
     [redirectToApp],
   );
 
   const register = useCallback(
-    async (data: RegisterRequest) => {
+    async (data: RegisterRequest, redirectPath?: string) => {
       const { token, user: registeredUser } = await registerBuyer(data);
       await persistSession(token, registeredUser);
       setUser(registeredUser);
-      redirectToApp();
+      redirectToApp(redirectPath);
     },
     [redirectToApp],
   );
