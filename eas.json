@@ -16,7 +16,9 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "USE_MOCKS": "false"
+        "USE_MOCKS": "false",
+        "EXPO_PUBLIC_BACKEND_URL": "https://outletgo-backend.onrender.com",
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCLewZhT5sAoZm4AR-OtEOkbP-G7g-cWkc"
       },
       "android": {
         "buildType": "apk"
@@ -25,7 +27,9 @@
     "production": {
       "distribution": "store",
       "env": {
-        "USE_MOCKS": "false"
+        "USE_MOCKS": "false",
+        "EXPO_PUBLIC_BACKEND_URL": "https://outletgo-backend.onrender.com",
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCLewZhT5sAoZm4AR-OtEOkbP-G7g-cWkc"
       },
       "android": {
         "buildType": "app-bundle"
