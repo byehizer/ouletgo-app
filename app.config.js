@@ -98,7 +98,7 @@ module.exports = () => {
     scheme: 'outletgo',
     extra: {
       eas: {
-        projectId: 'outletgo-app',
+        projectId: '06076a88-6c81-41ae-88f3-cad81c04c2f6',
       },
     },
   };
