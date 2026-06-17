@@ -13,6 +13,9 @@ export default function CheckoutLayout() {
         headerShadowVisible: false,
         contentStyle: { backgroundColor: Colors.surface.base },
       }}
-    />
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen name="return" options={{ headerShown: false }} />
+    </Stack>
   );
 }
