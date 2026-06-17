@@ -21,13 +21,13 @@ interface OrderStatusBadgeProps {
 }
 
 export function OrderStatusBadge({ status, compact = false }: OrderStatusBadgeProps) {
-  const variant = ORDER_STATUS_BADGE[status];
-  const colors = VARIANT_STYLES[variant];
+  const variant = ORDER_STATUS_BADGE[status] || 'neutral';
+  const colors = VARIANT_STYLES[variant] || VARIANT_STYLES.neutral;
 
   return (
     <View style={[styles.badge, { backgroundColor: colors.bg }, compact && styles.badgeCompact]}>
       <Text style={[styles.text, { color: colors.text }, compact && styles.textCompact]} numberOfLines={1}>
-        {ORDER_STATUS_LABELS[status]}
+        {ORDER_STATUS_LABELS[status] || status}
       </Text>
     </View>
   );

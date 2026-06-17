@@ -118,6 +118,7 @@ export type OrderStatus =
   | 'IN_TRANSIT'          // cadete en camino (solo ENVIO_CADETE)
   | 'DELIVERED'           // terminal exitoso para ambos caminos
   | 'CANCELED'
+  | 'CANCELLED'
   | 'STOCK_ISSUE';
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
@@ -130,6 +131,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   IN_TRANSIT: 'Cadete en camino',
   DELIVERED: 'Entregado',
   CANCELED: 'Cancelado',
+  CANCELLED: 'Cancelado',
   STOCK_ISSUE: 'Problema de stock',
 };
 
@@ -145,6 +147,7 @@ export const ORDER_STATUS_BADGE: Record<OrderStatus, OrderStatusBadgeVariant> = 
   IN_TRANSIT: 'info',
   DELIVERED: 'success',
   CANCELED: 'danger',
+  CANCELLED: 'danger',
   STOCK_ISSUE: 'warning',
 };
 
@@ -152,6 +155,7 @@ export const ORDER_STATUS_BADGE: Record<OrderStatus, OrderStatusBadgeVariant> = 
 export const ORDER_TERMINAL_STATUSES: ReadonlySet<OrderStatus> = new Set<OrderStatus>([
   'DELIVERED',
   'CANCELED',
+  'CANCELLED',
 ]);
 
 /** El pedido llegó a su destino exitosamente (habilita reseñar). */

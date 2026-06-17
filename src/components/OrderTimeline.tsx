@@ -37,7 +37,7 @@ function getFlow(method: ShippingMethod): OrderStatus[] {
 }
 
 function stepIndex(flow: OrderStatus[], status: OrderStatus): number {
-  if (status === 'CANCELED' || status === 'STOCK_ISSUE') {
+  if (status === 'CANCELED' || status === 'CANCELLED' || status === 'STOCK_ISSUE') {
     const paidIdx = flow.indexOf('PAID');
     const lastActive = flow.findIndex((s) => s === status);
     return lastActive >= 0 ? lastActive : paidIdx;
@@ -55,7 +55,7 @@ interface OrderTimelineProps {
 export function OrderTimeline({ status, shippingMethod }: OrderTimelineProps) {
   const flow = getFlow(shippingMethod);
   const currentIdx = stepIndex(flow, status);
-  const isCanceled = status === 'CANCELED';
+  const isCanceled = status === 'CANCELED' || status === 'CANCELLED';
   const isStockIssue = status === 'STOCK_ISSUE';
 
   return (
