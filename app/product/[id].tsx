@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
+  FlatList,
   Pressable,
   ScrollView,
   Text,
@@ -32,6 +33,7 @@ import { useAuth } from '../../src/context/AuthContext';
 import { formatARS } from '../../src/lib/format';
 import { openChatWithStore } from '../../src/lib/openChat';
 import { Colors } from '../../src/theme/colors';
+import { fetchStoreProducts } from '../../src/api/storeApi';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -47,6 +49,7 @@ export default function ProductDetailScreen() {
   const [selectedVariationId, setSelectedVariationId] = useState<string | null>(null);
   const [cartMessage, setCartMessage] = useState<string | null>(null);
   const [reportVisible, setReportVisible] = useState(false);
+  const [recommendedProducts, setRecommendedProducts] = useState<CatalogProduct[]>([]);
 
   const productId = typeof id === 'string' ? id : '';
 
@@ -65,6 +68,14 @@ export default function ProductDetailScreen() {
         setProduct(data);
         const firstInStock = data.variations.find((v) => v.stock > 0);
         setSelectedVariationId(firstInStock?.id ?? data.variations[0]?.id ?? null);
+        
+        try {
+          const storeProductsData = await fetchStoreProducts(data.storeId, { size: 8 });
+          const otherProducts = storeProductsData.content.filter((p) => p.id !== productId);
+          setRecommendedProducts(otherProducts);
+        } catch (recErr) {
+          console.error('Error fetching recommended products:', recErr);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'No se pudo cargar el producto.');
       } finally {
@@ -284,6 +295,31 @@ export default function ProductDetailScreen() {
             </Text>
             <ReviewList reviews={visibleReviews} />
           </View>
+
+          {recommendedProducts.length > 0 ? (
+            <View style={{ marginTop: 28 }}>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: '#0F172A', marginBottom: 12 }}>
+                Otros productos de esta tienda
+              </Text>
+              <FlatList
+                horizontal
+                data={recommendedProducts}
+                keyExtractor={(item) => item.id}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 12 }}
+                renderItem={({ item }) => (
+                  <View style={{ width: 160 }}>
+                    <ProductCard
+                      product={item}
+                      onPress={(p) => {
+                        router.push(`/product/${p.id}`);
+                      }}
+                    />
+                  </View>
+                )}
+              />
+            </View>
+          ) : null}
         </View>
       </ScrollView>
 
