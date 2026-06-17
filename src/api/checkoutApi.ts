@@ -186,6 +186,14 @@ export async function createOrder(req: CreateOrderRequest): Promise<CreateOrderR
 }
 
 /**
+ * Notifica al backend el resultado del pago para actualizar el estado del pedido.
+ */
+export async function updateOrderPaymentStatus(orderId: string, status: MpPaymentStatus): Promise<void> {
+  if (USE_MOCKS) return;
+  await apiClient.post(`/api/buyer/orders/${orderId}/payment-status?status=${status}`);
+}
+
+/**
  * Parsea los parámetros que MP devuelve en el deep link de retorno.
  * outletgo://checkout/return?status=approved&order_id=123&payment_id=456
  */

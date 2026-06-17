@@ -35,6 +35,7 @@ import {
   createOrder,
   getCheckoutSummary,
   parseMpReturnUrl,
+  updateOrderPaymentStatus,
   type MpPaymentStatus,
 } from '../../src/api/checkoutApi';
 import {
@@ -527,6 +528,15 @@ export default function CheckoutScreen() {
       }
 
       setResultOrderId(finalOrderId);
+
+      // Notificamos al backend del estado del pago para que confirme o cancele el pedido y restaure stock si aplica
+      if (finalOrderId && !USE_MOCKS) {
+        try {
+          await updateOrderPaymentStatus(finalOrderId, mpStatus);
+        } catch (updateErr) {
+          console.error('Error al actualizar el estado de pago en el backend:', updateErr);
+        }
+      }
 
       if (mpStatus === 'approved') {
         await clearIdempotencyKey(fp);
