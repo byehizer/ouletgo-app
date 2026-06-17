@@ -9,26 +9,17 @@ import { API_BASE_URL } from '../config/env';
  */
 export async function checkOnline(): Promise<boolean> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+  const timeout = setTimeout(() => controller.abort(), 4000);
   try {
-    const healthUrl = `${API_BASE_URL.replace(/\/$/, '')}/actuator/health`;
-    const res = await fetch(healthUrl, { method: 'HEAD', signal: controller.signal });
-    clearTimeout(timeout);
-    return res.ok || res.status < 500;
+    // Usamos el endpoint oficial de Android/Google para verificar conectividad.
+    // Realizar un GET a generate_204 es la forma más estable en React Native Android.
+    const res = await fetch('https://clients3.google.com/generate_204', {
+      method: 'GET',
+      signal: controller.signal,
+    });
+    return res.status === 204 || res.ok;
   } catch {
-    // Fallback: red general
-    try {
-      const fallback = new AbortController();
-      const fallbackTimeout = setTimeout(() => fallback.abort(), 4000);
-      const res = await fetch('https://www.google.com/generate_204', {
-        method: 'HEAD',
-        signal: fallback.signal,
-      });
-      clearTimeout(fallbackTimeout);
-      return res.ok;
-    } catch {
-      return false;
-    }
+    return false;
   } finally {
     clearTimeout(timeout);
   }
