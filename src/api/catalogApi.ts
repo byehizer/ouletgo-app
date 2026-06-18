@@ -62,7 +62,7 @@ export async function fetchCatalogProducts(
   if (params.name) sp.set('name', params.name);
   if (params.minPrice != null) sp.set('minPrice', String(params.minPrice));
   if (params.maxPrice != null) sp.set('maxPrice', String(params.maxPrice));
-  if (params.sizeFilter) sp.set('size', params.sizeFilter);
+  if (params.sizeFilter) sp.set('sizeFilter', params.sizeFilter);
   if (params.latitude != null) sp.set('latitude', String(params.latitude));
   if (params.longitude != null) sp.set('longitude', String(params.longitude));
   if (params.radiusKm != null) sp.set('radiusKm', String(params.radiusKm));
