@@ -9,6 +9,7 @@ export const MOCK_CATEGORIES: CatalogCategory[] = [
   { id: 'cat-remeras', name: 'Remeras' },
   { id: 'cat-pantalones', name: 'Pantalones' },
   { id: 'cat-camperas', name: 'Camperas' },
+  { id: 'cat-calzado', name: 'Zapatos' },
   { id: 'cat-accesorios', name: 'Accesorios' },
 ];
 
@@ -27,6 +28,7 @@ const PRODUCT_NAMES: Record<string, string[]> = {
   'cat-remeras': ['Remera básica algodón', 'Remera oversize', 'Remera estampada', 'Remera deportiva'],
   'cat-pantalones': ['Jean slim', 'Pantalón cargo', 'Jogging unisex', 'Babucha frisa'],
   'cat-camperas': ['Campera rompeviento', 'Campera jean', 'Bomber jacket', 'Parka impermeable'],
+  'cat-calzado': ['Zapatilla de lona urbana', 'Zapatilla running deportiva', 'Zapato de vestir cuero', 'Bota urbana negra'],
   'cat-accesorios': ['Cinturón cuero', 'Gorra trucker', 'Bufanda lana', 'Riñonera urbana'],
 };
 
@@ -60,7 +62,11 @@ function buildMockProducts(): MockProductInternal[] {
       const storeIdx = (idx % STORE_NAMES.length) + 1;
       const storeId = `mock-store-${storeIdx}`;
       const name = names[i % names.length] ?? 'Producto outlet';
-      const sizes = SIZE_POOL.filter((_, si) => (idx + si) % 2 === 0);
+
+      const isFootwear = category.id === 'cat-calzado';
+      const sizes = isFootwear
+        ? ['37', '38', '39', '40', '41', '42'].filter((_, si) => (idx + si) % 2 === 0)
+        : SIZE_POOL.filter((_, si) => (idx + si) % 2 === 0);
 
       items.push({
         id: `mock-prod-${idx}`,

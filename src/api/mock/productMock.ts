@@ -10,6 +10,7 @@ const PRODUCT_NAMES: Record<string, string[]> = {
   'cat-remeras': ['Remera básica algodón', 'Remera oversize', 'Remera estampada', 'Remera deportiva'],
   'cat-pantalones': ['Jean slim', 'Pantalón cargo', 'Jogging unisex', 'Babucha frisa'],
   'cat-camperas': ['Campera rompeviento', 'Campera jean', 'Bomber jacket', 'Parka impermeable'],
+  'cat-calzado': ['Zapatilla de lona urbana', 'Zapatilla running deportiva', 'Zapato de vestir cuero', 'Bota urbana negra'],
   'cat-accesorios': ['Cinturón cuero', 'Gorra trucker', 'Bufanda lana', 'Riñonera urbana'],
 };
 
@@ -17,6 +18,7 @@ const MOCK_CATEGORIES = [
   { id: 'cat-remeras', name: 'Remeras' },
   { id: 'cat-pantalones', name: 'Pantalones' },
   { id: 'cat-camperas', name: 'Camperas' },
+  { id: 'cat-calzado', name: 'Zapatos' },
   { id: 'cat-accesorios', name: 'Accesorios' },
 ];
 
@@ -97,7 +99,16 @@ export async function mockFetchProductDetail(productId: string): Promise<Product
   const storeName = STORE_NAMES[storeIdx] ?? 'Tienda';
   const storeId = `mock-store-${storeIdx + 1}`;
   const basePrice = 8500 + idx * 1250;
-  const sizes = ['S', 'M', 'L', 'XL'].filter((_, i) => (idx + i) % 2 === 0);
+
+  const catIndex = Math.floor((idx - 1) / 8);
+  const category = MOCK_CATEGORIES[catIndex];
+  const isFootwear = category?.id === 'cat-calzado';
+
+  const sizes = isFootwear
+    ? ['38', '39', '40', '41', '42'].filter((_, i) => (idx + i) % 2 === 0)
+    : ['S', 'M', 'L', 'XL'].filter((_, i) => (idx + i) % 2 === 0);
+
+  const fallbackSizes = isFootwear ? ['40', '41'] : ['M', 'L'];
 
   return {
     id: productId,
@@ -113,7 +124,7 @@ export async function mockFetchProductDetail(productId: string): Promise<Product
     storeName,
     ratingAvg: idx % 3 === 0 ? null : 4.2,
     ratingCount: idx * 2,
-    variations: buildVariations(productId, basePrice, sizes.length > 0 ? sizes : ['M', 'L']),
+    variations: buildVariations(productId, basePrice, sizes.length > 0 ? sizes : fallbackSizes),
     reviews: buildReviews(productId),
   };
 }

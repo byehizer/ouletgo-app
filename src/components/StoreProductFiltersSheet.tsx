@@ -8,7 +8,7 @@ import {
   DEFAULT_STORE_PRODUCT_FILTERS,
   type StoreProductFilterState,
 } from '../types/storeProductFilters';
-import { SIZE_OPTIONS } from '../types/catalogFilters';
+import { getAvailableSizes, isFootwearCategoryName } from '../types/catalogFilters';
 
 interface StoreProductFiltersSheetProps {
   visible: boolean;
@@ -27,6 +27,25 @@ export function StoreProductFiltersSheet({
 }: StoreProductFiltersSheetProps) {
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState<StoreProductFilterState>(initialFilters);
+
+  const selectedCategory = categories.find((c) => c.id === draft.categoryId);
+  const sizeOptions = getAvailableSizes(selectedCategory?.name);
+
+  const handleCategorySelect = (newCatId: string | null) => {
+    setDraft((prev) => {
+      let sizeFilter = prev.sizeFilter;
+      if (sizeFilter) {
+        const prevCategory = categories.find((c) => c.id === prev.categoryId);
+        const nextCategory = categories.find((c) => c.id === newCatId);
+        const wasFootwear = isFootwearCategoryName(prevCategory?.name);
+        const isNextFootwear = isFootwearCategoryName(nextCategory?.name);
+        if (wasFootwear !== isNextFootwear) {
+          sizeFilter = null;
+        }
+      }
+      return { ...prev, categoryId: newCatId, sizeFilter };
+    });
+  };
 
   useEffect(() => {
     if (visible) setDraft(initialFilters);
@@ -116,14 +135,14 @@ export function StoreProductFiltersSheet({
               <Chip
                 label="Todas"
                 selected={draft.categoryId === null}
-                onPress={() => setDraft((f) => ({ ...f, categoryId: null }))}
+                onPress={() => handleCategorySelect(null)}
               />
               {categories.map((cat) => (
                 <Chip
                   key={cat.id}
                   label={cat.name}
                   selected={draft.categoryId === cat.id}
-                  onPress={() => setDraft((f) => ({ ...f, categoryId: cat.id }))}
+                  onPress={() => handleCategorySelect(cat.id)}
                 />
               ))}
             </View>
@@ -137,7 +156,7 @@ export function StoreProductFiltersSheet({
                 selected={draft.sizeFilter === null}
                 onPress={() => setDraft((f) => ({ ...f, sizeFilter: null }))}
               />
-              {SIZE_OPTIONS.map((size) => (
+              {sizeOptions.map((size) => (
                 <Chip
                   key={size}
                   label={size}

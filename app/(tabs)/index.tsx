@@ -35,6 +35,7 @@ import {
   DEFAULT_CATALOG_FILTERS,
   countActiveFilters,
   parsePriceInput,
+  isFootwearCategoryName,
   type CatalogFilterState,
 } from '../../src/types/catalogFilters';
 
@@ -160,8 +161,20 @@ export default function HomeScreen() {
   }, [debouncedSearch, filters, coords]);
 
   const handleCategorySelect = useCallback((categoryId: string | null) => {
-    setFilters((prev) => ({ ...prev, categoryId }));
-  }, []);
+    setFilters((prev) => {
+      let sizeFilter = prev.sizeFilter;
+      if (sizeFilter) {
+        const prevCategory = categories.find((c) => c.id === prev.categoryId);
+        const nextCategory = categories.find((c) => c.id === categoryId);
+        const wasFootwear = isFootwearCategoryName(prevCategory?.name);
+        const isNextFootwear = isFootwearCategoryName(nextCategory?.name);
+        if (wasFootwear !== isNextFootwear) {
+          sizeFilter = null;
+        }
+      }
+      return { ...prev, categoryId, sizeFilter };
+    });
+  }, [categories]);
 
   const handleApplyFilters = useCallback(
     (next: CatalogFilterState, nextCoords: Coordinates | null) => {

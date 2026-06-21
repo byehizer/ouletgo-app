@@ -16,7 +16,8 @@ import { getCurrentCoordinates, type Coordinates } from '../lib/location';
 import {
   DEFAULT_CATALOG_FILTERS,
   RADIUS_OPTIONS,
-  SIZE_OPTIONS,
+  getAvailableSizes,
+  isFootwearCategoryName,
   type CatalogFilterState,
 } from '../types/catalogFilters';
 
@@ -39,6 +40,25 @@ export function FiltersSheet({
   const [draft, setDraft] = useState<CatalogFilterState>(initialFilters);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+
+  const selectedCategory = categories.find((c) => c.id === draft.categoryId);
+  const sizeOptions = getAvailableSizes(selectedCategory?.name);
+
+  const handleCategorySelect = (newCatId: string | null) => {
+    setDraft((prev) => {
+      let sizeFilter = prev.sizeFilter;
+      if (sizeFilter) {
+        const prevCategory = categories.find((c) => c.id === prev.categoryId);
+        const nextCategory = categories.find((c) => c.id === newCatId);
+        const wasFootwear = isFootwearCategoryName(prevCategory?.name);
+        const isNextFootwear = isFootwearCategoryName(nextCategory?.name);
+        if (wasFootwear !== isNextFootwear) {
+          sizeFilter = null;
+        }
+      }
+      return { ...prev, categoryId: newCatId, sizeFilter };
+    });
+  };
 
   useEffect(() => {
     if (visible) {
@@ -143,7 +163,7 @@ export function FiltersSheet({
               Talle
             </Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-              {SIZE_OPTIONS.map((size) => {
+              {sizeOptions.map((size) => {
                 const selected = draft.sizeFilter === size;
                 return (
                   <Pressable
@@ -185,14 +205,14 @@ export function FiltersSheet({
               <Chip
                 label="Todas"
                 selected={draft.categoryId === null}
-                onPress={() => setDraft((f) => ({ ...f, categoryId: null }))}
+                onPress={() => handleCategorySelect(null)}
               />
               {categories.map((cat) => (
                 <Chip
                   key={cat.id}
                   label={cat.name}
                   selected={draft.categoryId === cat.id}
-                  onPress={() => setDraft((f) => ({ ...f, categoryId: cat.id }))}
+                  onPress={() => handleCategorySelect(cat.id)}
                 />
               ))}
             </View>
