@@ -8,6 +8,7 @@ import {
   ScrollView,
   Text,
   BackHandler,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -83,37 +84,43 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F7FA', position: 'relative' }}>
-      {/* Botón Volver */}
-      <Pressable
-        onPress={handleBack}
-        style={({ pressed }) => [
-          {
-            position: 'absolute',
-            top: Platform.OS === 'ios' ? 12 : 16,
-            left: 16,
-            zIndex: 10,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 4,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 8,
-            backgroundColor: '#ffffff',
-            borderWidth: 1,
-            borderColor: '#E2E8F0',
-            shadowColor: '#0F172A',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.04,
-            shadowRadius: 4,
-            elevation: 1,
-          },
-          pressed && { opacity: 0.8 },
-        ]}
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F7FA' }}>
+      {/* Header Fijo */}
+      <View
+        style={{
+          height: 56,
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          backgroundColor: '#F5F7FA',
+          borderBottomWidth: 1,
+          borderColor: '#E2E8F0',
+        }}
       >
-        <Ionicons name="arrow-back" size={18} color="#475569" />
-        <Text style={{ fontSize: 13, fontWeight: '600', color: '#475569' }}>Volver</Text>
-      </Pressable>
+        <Pressable
+          onPress={handleBack}
+          style={({ pressed }) => [
+            {
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: '#FFFFFF',
+              borderWidth: 1,
+              borderColor: '#E2E8F0',
+              justifyContent: 'center',
+              alignItems: 'center',
+              shadowColor: '#0F172A',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.04,
+              shadowRadius: 4,
+              elevation: 1,
+            },
+            pressed && { opacity: 0.8 },
+          ]}
+        >
+          <Ionicons name="arrow-back" size={20} color="#475569" />
+        </Pressable>
+      </View>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

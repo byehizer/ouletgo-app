@@ -16,10 +16,20 @@ import {
 } from 'react-native';
 
 import { Colors } from '../../src/theme/colors';
+import { useAuth } from '../../src/context/AuthContext';
+import { fetchTopRatedStores, type TopRatedStore } from '../../src/api/storeApi';
+import {
+  fetchFavoriteProducts,
+  fetchFavoriteStores,
+  type FavoriteProduct,
+  type FavoriteStore,
+} from '../../src/api/favoritesApi';
+import { formatARS } from '../../src/lib/format';
 
 import {
   fetchCatalogProducts,
   fetchCategories,
+  fetchNewArrivals,
   type CatalogCategory,
   type CatalogProduct,
   type CatalogQuery,
@@ -42,14 +52,202 @@ import {
 const PAGE_SIZE = 10;
 
 // Variable en memoria para rastrear si ya se mostró la bienvenida en la sesión actual de la app.
-// Se reinicia automáticamente cuando la app se cierra por completo (cold launch).
 let welcomeShownThisSession = false;
+
+// Tarjeta horizontal de tienda para la sección "Mejor Rankeadas" (Social Proof)
+function TopRatedStoreCard({ store, onPress }: { store: TopRatedStore; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        width: 140,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        padding: 12,
+        marginRight: 10,
+        alignItems: 'center',
+        opacity: pressed ? 0.9 : 1,
+      })}
+    >
+      <View
+        style={{
+          width: 54,
+          height: 54,
+          borderRadius: 27,
+          backgroundColor: '#E8F4FD',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 8,
+          borderWidth: 1,
+          borderColor: '#5AAEE0',
+          overflow: 'hidden',
+        }}
+      >
+        {store.imageUrl ? (
+          <Image
+            source={{ uri: store.imageUrl }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        ) : (
+          <Ionicons name="storefront-outline" size={24} color="#2B8FD4" />
+        )}
+      </View>
+      <Text
+        numberOfLines={1}
+        style={{ fontSize: 13, fontWeight: '700', color: '#0F172A', textAlign: 'center', width: '100%' }}
+      >
+        {store.name}
+      </Text>
+      <Text
+        numberOfLines={1}
+        style={{ fontSize: 11, color: '#64748B', marginTop: 2, textAlign: 'center', width: '100%' }}
+      >
+        {store.address ? store.address.split(',')[0] : 'Avellaneda'}
+      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 }}>
+        <Ionicons name="star" size={12} color="#F59E0B" />
+        <Text style={{ fontSize: 11, fontWeight: '600', color: '#0F172A' }}>
+          {store.ratingAvg != null ? store.ratingAvg.toFixed(1) : '—'}
+        </Text>
+        <Text style={{ fontSize: 10, color: '#64748B' }}>
+          ({store.ratingCount})
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
+// Tarjeta horizontal compacta de producto para "Recién Llegados" y "Favoritos"
+function CompactProductCard({ product, onPress }: { product: CatalogProduct; onPress: () => void }) {
+  const rating =
+    product.ratingAvg != null
+      ? `${product.ratingAvg.toFixed(1)} (${product.ratingCount})`
+      : 'Sin res.';
+
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        width: 140,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        overflow: 'hidden',
+        marginRight: 10,
+        opacity: pressed ? 0.9 : 1,
+      })}
+    >
+      <View
+        style={{
+          height: 90,
+          backgroundColor: '#E8F4FD',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {product.thumbnailUrl ? (
+          <Image
+            source={{ uri: product.thumbnailUrl }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        ) : (
+          <Ionicons name="shirt-outline" size={28} color="#2B8FD4" />
+        )}
+      </View>
+      <View style={{ padding: 8 }}>
+        <Text
+          numberOfLines={1}
+          style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}
+        >
+          {product.name}
+        </Text>
+        <Text
+          numberOfLines={1}
+          style={{ fontSize: 10, color: '#64748B', marginTop: 2 }}
+        >
+          {product.storeName}
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginTop: 6,
+          }}
+        >
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#1A3F7A' }}>
+            {formatARS(product.price)}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+            <Ionicons name="star" size={10} color="#F59E0B" />
+            <Text style={{ fontSize: 9, color: '#64748B' }}>{rating}</Text>
+          </View>
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+// Tarjeta horizontal de tienda favorita para "Guardado para vos"
+function CompactFavoriteStoreCard({ store, onPress }: { store: FavoriteStore; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => ({
+        width: 140,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#E2E8F0',
+        padding: 12,
+        marginRight: 10,
+        alignItems: 'center',
+        opacity: pressed ? 0.9 : 1,
+      })}
+    >
+      <View
+        style={{
+          width: 50,
+          height: 50,
+          borderRadius: 25,
+          backgroundColor: '#FFF1F2',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 8,
+          borderWidth: 1,
+          borderColor: '#FDA4AF',
+        }}
+      >
+        <Ionicons name="heart" size={24} color="#E11D48" />
+      </View>
+      <Text
+        numberOfLines={1}
+        style={{ fontSize: 13, fontWeight: '700', color: '#0F172A', textAlign: 'center', width: '100%' }}
+      >
+        {store.storeName}
+      </Text>
+      <Text
+        numberOfLines={1}
+        style={{ fontSize: 10, color: '#64748B', marginTop: 2, textAlign: 'center', width: '100%' }}
+      >
+        {store.address ? store.address.split(',')[0] : 'Avellaneda'}
+      </Text>
+    </Pressable>
+  );
+}
 
 export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const columnGap = 12;
   const horizontalPad = 16;
   const cardWidth = (width - horizontalPad * 2 - columnGap) / 2;
+
+  const { isAuthenticated } = useAuth();
 
   const [categories, setCategories] = useState<CatalogCategory[]>([]);
   const [welcomeVisible, setWelcomeVisible] = useState(false);
@@ -66,6 +264,13 @@ export default function HomeScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Estados de secciones adicionales
+  const [topRatedStores, setTopRatedStores] = useState<TopRatedStore[]>([]);
+  const [newArrivals, setNewArrivals] = useState<CatalogProduct[]>([]);
+  const [favProducts, setFavProducts] = useState<FavoriteProduct[]>([]);
+  const [favStores, setFavStores] = useState<FavoriteStore[]>([]);
+  const [loadingSections, setLoadingSections] = useState(true);
 
   const loadingRef = useRef(false);
   const isFirstSearch = useRef(true);
@@ -128,14 +333,47 @@ export default function HomeScreen() {
     [buildQuery],
   );
 
+  // Carga de secciones secundarias del Home (Social Proof, Novedades y Favoritos)
+  const loadHomeSections = useCallback(async () => {
+    setLoadingSections(true);
+    try {
+      const [topRated, arrivals] = await Promise.all([
+        fetchTopRatedStores(6),
+        fetchNewArrivals(6),
+      ]);
+      setTopRatedStores(topRated);
+      setNewArrivals(arrivals);
+
+      if (isAuthenticated) {
+        const [favProds, favSts] = await Promise.all([
+          fetchFavoriteProducts(),
+          fetchFavoriteStores(),
+        ]);
+        setFavProducts(favProds);
+        setFavStores(favSts);
+      } else {
+        setFavProducts([]);
+        setFavStores([]);
+      }
+    } catch (err) {
+      console.warn('Error al cargar secciones secundarias de inicio:', err);
+    } finally {
+      setLoadingSections(false);
+    }
+  }, [isAuthenticated]);
+
+  // Efecto inicial de carga
   useEffect(() => {
     void (async () => {
       setLoadingInitial(true);
-      await loadCategories();
-      await loadProducts(0, true);
+      await Promise.all([
+        loadCategories(),
+        loadProducts(0, true),
+        loadHomeSections(),
+      ]);
       setLoadingInitial(false);
     })();
-  }, []);
+  }, [loadHomeSections]);
 
   useEffect(() => {
     if (!welcomeShownThisSession) {
@@ -148,6 +386,7 @@ export default function HomeScreen() {
     setWelcomeVisible(false);
   }, []);
 
+  // Recarga productos al modificar filtros de búsqueda
   useEffect(() => {
     if (isFirstSearch.current) {
       isFirstSearch.current = false;
@@ -159,6 +398,12 @@ export default function HomeScreen() {
       setLoadingInitial(false);
     })();
   }, [debouncedSearch, filters, coords]);
+
+  // Monitorea cambios de sesión para recargar favoritos si corresponde
+  useEffect(() => {
+    if (loadingInitial) return;
+    void loadHomeSections();
+  }, [isAuthenticated]);
 
   const handleCategorySelect = useCallback((categoryId: string | null) => {
     setFilters((prev) => {
@@ -186,9 +431,12 @@ export default function HomeScreen() {
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadProducts(0, true);
+    await Promise.all([
+      loadProducts(0, true),
+      loadHomeSections(),
+    ]);
     setRefreshing(false);
-  }, [loadProducts]);
+  }, [loadProducts, loadHomeSections]);
 
   const handleLoadMore = useCallback(async () => {
     if (!hasMore || loadingMore || loadingInitial || loadingRef.current) return;
@@ -288,7 +536,7 @@ export default function HomeScreen() {
             />
 
             {loadingInitial && products.length === 0 ? (
-              <ActivityIndicator style={{ marginVertical: 24 }} color="#2B8FD4" />
+              <ActivityIndicator style={{ marginVertical: 12 }} color="#2B8FD4" />
             ) : null}
 
             {error ? (
@@ -304,6 +552,174 @@ export default function HomeScreen() {
                 {error}
               </Text>
             ) : null}
+
+            {/* SECCIÓN A: Tiendas Mejor Rankeadas (Social Proof) */}
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: '#0F172A', marginHorizontal: 16, marginBottom: 8 }}>
+                Tiendas Recomendadas ⭐
+              </Text>
+              {loadingSections && topRatedStores.length === 0 ? (
+                <View style={{ height: 120, justifyContent: 'center', alignItems: 'center' }}>
+                  <ActivityIndicator size="small" color="#2B8FD4" />
+                </View>
+              ) : (
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={topRatedStores}
+                  keyExtractor={(item) => item.id}
+                  contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}
+                  renderItem={({ item }) => (
+                    <TopRatedStoreCard
+                      store={item}
+                      onPress={() => router.push(`/store/${item.id}`)}
+                    />
+                  )}
+                />
+              )}
+            </View>
+
+            {/* SECCIÓN B: Recién Llegados */}
+            <View style={{ marginTop: 16 }}>
+              <Text style={{ fontSize: 18, fontWeight: '800', color: '#0F172A', marginHorizontal: 16, marginBottom: 8 }}>
+                Recién Llegados 🔥
+              </Text>
+              {loadingSections && newArrivals.length === 0 ? (
+                <View style={{ height: 140, justifyContent: 'center', alignItems: 'center' }}>
+                  <ActivityIndicator size="small" color="#2B8FD4" />
+                </View>
+              ) : (
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={newArrivals}
+                  keyExtractor={(item) => item.id}
+                  contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}
+                  renderItem={({ item }) => (
+                    <CompactProductCard
+                      product={item}
+                      onPress={() => router.push(`/product/${item.id}`)}
+                    />
+                  )}
+                />
+              )}
+            </View>
+
+            {/* SECCIÓN C: Guardado para vos (Favoritos) */}
+            <View style={{ marginTop: 16, marginBottom: 8 }}>
+              {!isAuthenticated ? (
+                // Invitado: Mostrar Banner de Iniciar Sesión
+                <View style={{ marginHorizontal: 16 }}>
+                  <Text style={{ fontSize: 18, fontWeight: '800', color: '#0F172A', marginBottom: 8 }}>
+                    Guardado para vos ❤️
+                  </Text>
+                  <View
+                    style={{
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: '#E2E8F0',
+                      padding: 16,
+                      alignItems: 'center',
+                      shadowColor: '#0F172A',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.05,
+                      shadowRadius: 8,
+                      elevation: 2,
+                    }}
+                  >
+                    <Ionicons name="heart-outline" size={32} color="#E11D48" style={{ marginBottom: 8 }} />
+                    <Text style={{ fontSize: 14, fontWeight: '700', color: '#0F172A', textAlign: 'center' }}>
+                      Iniciá sesión para ver tus favoritos
+                    </Text>
+                    <Text style={{ fontSize: 12, color: '#64748B', textAlign: 'center', marginTop: 4, marginBottom: 12, paddingHorizontal: 8 }}>
+                      Guardá tus prendas y locales favoritos de Avellaneda para acceder rápido.
+                    </Text>
+                    <Pressable
+                      onPress={() => router.push('/(auth)/login?redirect=/(tabs)/')}
+                      style={{
+                        backgroundColor: '#2B8FD4',
+                        paddingVertical: 8,
+                        paddingHorizontal: 20,
+                        borderRadius: 8,
+                      }}
+                    >
+                      <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '700' }}>
+                        Iniciar sesión
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              ) : (
+                // Autenticado: Mostrar Favoritos (si tiene alguno)
+                (favStores.length > 0 || favProducts.length > 0) && (
+                  <View>
+                    <Text style={{ fontSize: 18, fontWeight: '800', color: '#0F172A', marginHorizontal: 16, marginBottom: 8 }}>
+                      Guardado para vos ❤️
+                    </Text>
+                    
+                    {favStores.length > 0 && (
+                      <View style={{ marginBottom: 12 }}>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: '#64748B', marginHorizontal: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          Tus locales favoritos
+                        </Text>
+                        <FlatList
+                          horizontal
+                          showsHorizontalScrollIndicator={false}
+                          data={favStores}
+                          keyExtractor={(item) => item.storeId}
+                          contentContainerStyle={{ paddingHorizontal: 16 }}
+                          renderItem={({ item }) => (
+                            <CompactFavoriteStoreCard
+                              store={item}
+                              onPress={() => router.push(`/store/${item.storeId}`)}
+                            />
+                          )}
+                        />
+                      </View>
+                    )}
+
+                    {favProducts.length > 0 && (
+                      <View>
+                        <Text style={{ fontSize: 12, fontWeight: '700', color: '#64748B', marginHorizontal: 16, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          Tus prendas guardadas
+                        </Text>
+                        <FlatList
+                          horizontal
+                          showsHorizontalScrollIndicator={false}
+                          data={favProducts}
+                          keyExtractor={(item) => item.productId}
+                          contentContainerStyle={{ paddingHorizontal: 16 }}
+                          renderItem={({ item }) => {
+                            const catalogProd: CatalogProduct = {
+                              id: item.productId,
+                              name: item.productName,
+                              thumbnailUrl: item.thumbnailUrl,
+                              price: item.price,
+                              storeName: item.storeName,
+                              storeId: item.storeId,
+                              ratingAvg: null,
+                              ratingCount: 0,
+                            };
+                            return (
+                              <CompactProductCard
+                                product={catalogProd}
+                                onPress={() => router.push(`/product/${item.productId}`)}
+                              />
+                            );
+                          }}
+                        />
+                      </View>
+                    )}
+                  </View>
+                )
+              )}
+            </View>
+
+            {/* SECCIÓN D: Catálogo Principal Feed */}
+            <Text style={{ fontSize: 18, fontWeight: '800', color: '#0F172A', marginHorizontal: 16, marginTop: 16, marginBottom: 8 }}>
+              Descubrí Ofertas ✨
+            </Text>
           </View>
         }
         ListEmptyComponent={

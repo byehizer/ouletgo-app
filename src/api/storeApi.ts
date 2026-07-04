@@ -1,5 +1,5 @@
 import { apiClient, normalizePage } from './client';
-import { mockFetchStoreProfile, mockFetchStoreProducts, mockFetchNearbyStores, mockSearchStoresByName } from './mock/storeMock';
+import { mockFetchStoreProfile, mockFetchStoreProducts, mockFetchNearbyStores, mockSearchStoresByName, mockFetchTopRatedStores } from './mock/storeMock';
 import { USE_MOCKS } from '../config/env';
 import type { Coordinates } from '../lib/location';
 
@@ -164,4 +164,23 @@ export async function searchStoresByName(query: StoreSearchQuery): Promise<Nearb
     skipAuth: true,
   });
   return Array.isArray(raw) ? (raw as NearbyStore[]) : [];
+}
+
+export interface TopRatedStore {
+  id: string;
+  name: string;
+  ratingAvg: number | null;
+  ratingCount: number;
+  imageUrl: string | null;
+  address?: string;
+}
+
+export async function fetchTopRatedStores(limit = 10): Promise<TopRatedStore[]> {
+  if (USE_MOCKS) {
+    return mockFetchTopRatedStores(limit);
+  }
+  const raw = await apiClient.get<unknown>(`${STORE_PATH}/top-rated?limit=${limit}`, {
+    skipAuth: true,
+  });
+  return Array.isArray(raw) ? (raw as TopRatedStore[]) : [];
 }

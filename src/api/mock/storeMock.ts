@@ -1,7 +1,7 @@
 import { mockFetchCatalogProducts } from './catalogMock';
 import { getMockStoreSchedule } from './storeScheduleMock';
 import type { CatalogProduct } from '../catalogApi';
-import type { NearbyStore, NearbyStoresQuery, StoreProfile, StoreProductsQuery, StoreSearchQuery } from '../storeApi';
+import type { NearbyStore, NearbyStoresQuery, StoreProfile, StoreProductsQuery, StoreSearchQuery, TopRatedStore } from '../storeApi';
 import type { ProductReview } from '../productApi';
 import type { Page } from '../types';
 import { computeDistanceKm, type Coordinates } from '../../lib/location';
@@ -223,5 +223,24 @@ export async function mockSearchStoresByName(query: StoreSearchQuery): Promise<N
   )
     .map((store) => toNearbyStore(store, origin))
     .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, limit);
+}
+
+export async function mockFetchTopRatedStores(limit = 10): Promise<TopRatedStore[]> {
+  await delay(250);
+  return MOCK_STORES.map((s) => ({
+    id: s.id,
+    name: s.name,
+    ratingAvg: s.ratingAvg,
+    ratingCount: s.ratingCount,
+    address: s.address,
+    imageUrl: `https://picsum.photos/seed/${s.id}/120/120`,
+  }))
+    .sort((a, b) => {
+      const avgA = a.ratingAvg ?? 0;
+      const avgB = b.ratingAvg ?? 0;
+      if (avgB !== avgA) return avgB - avgA;
+      return b.ratingCount - a.ratingCount;
+    })
     .slice(0, limit);
 }

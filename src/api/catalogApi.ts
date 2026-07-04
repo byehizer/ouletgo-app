@@ -1,5 +1,5 @@
 import { apiClient, normalizePage } from './client';
-import { mockFetchCatalogProducts, mockFetchCategories } from './mock/catalogMock';
+import { mockFetchCatalogProducts, mockFetchCategories, mockFetchNewArrivals } from './mock/catalogMock';
 import { USE_MOCKS } from '../config/env';
 
 import type { Page } from './types';
@@ -72,4 +72,14 @@ export async function fetchCatalogProducts(
     skipAuth: true,
   });
   return normalizePage<CatalogProduct>(raw);
+}
+
+export async function fetchNewArrivals(limit = 10): Promise<CatalogProduct[]> {
+  if (USE_MOCKS) {
+    return mockFetchNewArrivals(limit);
+  }
+  const raw = await apiClient.get<unknown>(`${PRODUCTS_PATH}/new-arrivals?limit=${limit}`, {
+    skipAuth: true,
+  });
+  return Array.isArray(raw) ? (raw as CatalogProduct[]) : [];
 }

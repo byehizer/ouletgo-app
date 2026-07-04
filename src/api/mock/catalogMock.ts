@@ -170,3 +170,18 @@ export async function mockFetchCatalogProducts(params: CatalogQuery): Promise<Pa
     size,
   };
 }
+
+export async function mockFetchNewArrivals(limit = 10): Promise<CatalogProduct[]> {
+  await delay(250);
+  return [...ALL_PRODUCTS]
+    .sort((a, b) => {
+      const idA = parseInt(a.id.replace('mock-prod-', ''), 10);
+      const idB = parseInt(b.id.replace('mock-prod-', ''), 10);
+      return idB - idA;
+    })
+    .slice(0, limit)
+    .map((p) => {
+      const { categoryId: _c, sizes: _s, ...product } = p;
+      return product;
+    });
+}
