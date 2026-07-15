@@ -26,6 +26,7 @@ import {
 } from '../../src/api/favoritesApi';
 import { formatARS } from '../../src/lib/format';
 import { LogisticsHeader } from '../../src/components/logistics/LogisticsHeader';
+import { PromotionalBannersCarousel } from '../../src/components/PromotionalBannersCarousel';
 
 import {
   fetchCatalogProducts,
@@ -511,6 +512,8 @@ export default function HomeScreen() {
               onLensPress={() => router.push('/search/visual')}
               activeFilterCount={activeFilterCount}
             />
+
+            <PromotionalBannersCarousel />
 
             {USE_MOCKS ? (
               <View
