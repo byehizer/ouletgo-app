@@ -10,6 +10,7 @@ import { OfflineBanner } from '../src/components/OfflineBanner';
 import { AuthProvider } from '../src/context/AuthContext';
 import { CartProvider } from '../src/context/CartContext';
 import { MessagesProvider } from '../src/context/MessagesContext';
+import { LogisticsProvider } from '../src/context/LogisticsContext';
 
 export default function RootLayout() {
   return (
@@ -17,17 +18,19 @@ export default function RootLayout() {
       <AuthProvider>
         <NotificationBootstrap />
         <OfflineBanner />
-        <MessagesProvider>
-        <CartProvider>
-          <StatusBar style="dark" backgroundColor="#ffffff" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: '#f5f7fa' },
-            }}
-          />
-        </CartProvider>
-        </MessagesProvider>
+        <LogisticsProvider>
+          <MessagesProvider>
+          <CartProvider>
+            <StatusBar style="dark" backgroundColor="#ffffff" />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: '#f5f7fa' },
+              }}
+            />
+          </CartProvider>
+          </MessagesProvider>
+        </LogisticsProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

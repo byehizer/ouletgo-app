@@ -25,6 +25,7 @@ import {
   type FavoriteStore,
 } from '../../src/api/favoritesApi';
 import { formatARS } from '../../src/lib/format';
+import { LogisticsHeader } from '../../src/components/logistics/LogisticsHeader';
 
 import {
   fetchCatalogProducts,
@@ -502,6 +503,7 @@ export default function HomeScreen() {
         onEndReachedThreshold={0.4}
         ListHeaderComponent={
           <View>
+            <LogisticsHeader />
             <SearchBar
               value={searchQuery}
               onChangeText={setSearchQuery}
