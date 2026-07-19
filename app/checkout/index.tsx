@@ -164,8 +164,7 @@ function CarrierCard({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const carrierIcon: keyof typeof Ionicons.glyphMap =
-    quote.carrier === 'ANDREANI' ? 'cube-outline' : 'mail-outline';
+  const carrierIcon: keyof typeof Ionicons.glyphMap = 'cube-outline';
 
   return (
     <Pressable
@@ -897,7 +896,7 @@ export default function CheckoutScreen() {
                   <Text style={styles.summaryLabel}>
                     {deliveryMethod === 'RETIRO_EN_PUNTO'
                       ? 'Envío'
-                      : `Envío${selectedCarrier ? ` (${selectedCarrier === 'ANDREANI' ? 'Andreani' : 'Correo Arg.'})` : ''}`}
+                      : `Envío${selectedCarrier ? ' (Reparto Propio)' : ''}`}
                   </Text>
                 </View>
                 <Text style={styles.summaryValue}>

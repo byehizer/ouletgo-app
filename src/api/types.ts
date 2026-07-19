@@ -69,16 +69,14 @@ export const SHIPPING_METHOD_DESCRIPTIONS: Record<ShippingMethod, string> = {
 // ShippingCarrier — carriers disponibles para ENVIO_CORREO
 // El comprador elige uno en el checkout; cada uno cotiza precio y plazo distinto.
 // ---------------------------------------------------------------------------
-export type ShippingCarrier = 'CORREO_ARGENTINO' | 'ANDREANI';
+export type ShippingCarrier = 'REPARTO_PROPIO';
 
 export const SHIPPING_CARRIER_LABELS: Record<ShippingCarrier, string> = {
-  CORREO_ARGENTINO: 'Correo Argentino',
-  ANDREANI: 'Andreani',
+  REPARTO_PROPIO: 'Reparto Propio',
 };
 
 export const SHIPPING_CARRIER_LOGOS: Record<ShippingCarrier, string> = {
-  CORREO_ARGENTINO: 'correo-argentino',
-  ANDREANI: 'andreani',
+  REPARTO_PROPIO: 'reparto-propio',
 };
 
 // ---------------------------------------------------------------------------

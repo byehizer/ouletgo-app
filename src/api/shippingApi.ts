@@ -100,8 +100,7 @@ export interface ShippingTrackingEvent {
 async function mockGetShippingQuotes(_req: ShippingQuoteRequest): Promise<ShippingQuote[]> {
   await new Promise((r) => setTimeout(r, 400));
   return [
-    { carrier: 'CORREO_ARGENTINO', cost: 2800, estimatedDays: 5 },
-    { carrier: 'ANDREANI', cost: 3900, estimatedDays: 3 },
+    { carrier: 'REPARTO_PROPIO', cost: 1500, estimatedDays: 2 },
   ];
 }
 
@@ -137,8 +136,8 @@ async function mockGetShippingTracking(_orderId: string): Promise<ShippingTracki
   await new Promise((r) => setTimeout(r, 250));
   return {
     orderId: _orderId,
-    carrier: 'ANDREANI',
-    trackingNumber: 'AND-MOCK-001',
+    carrier: 'REPARTO_PROPIO',
+    trackingNumber: 'RP-MOCK-001',
     currentStatus: 'En tránsito',
     estimatedDelivery: new Date(Date.now() + 2 * 86400000).toISOString(),
     events: [
