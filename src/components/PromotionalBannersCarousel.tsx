@@ -2,9 +2,9 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Image,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -59,16 +59,17 @@ export function PromotionalBannersCarousel() {
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <ScrollView
         horizontal
-        data={banners}
-        keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
-        snapToInterval={bannerWidth + 12} // width + gap
         decelerationRate="fast"
+        snapToInterval={bannerWidth + 12} // width + gap
+        snapToAlignment="center"
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => (
+      >
+        {banners.map((item) => (
           <Pressable
+            key={item.id}
             onPress={() => handleBannerPress(item)}
             style={({ pressed }) => [
               styles.card,
@@ -88,8 +89,8 @@ export function PromotionalBannersCarousel() {
               </View>
             ) : null}
           </Pressable>
-        )}
-      />
+        ))}
+      </ScrollView>
     </View>
   );
 }

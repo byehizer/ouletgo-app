@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Linking, Pressable, Text, View } from 'react-native';
+import { Image, Linking, Pressable, Text, View } from 'react-native';
 
 import type { StoreProfile } from '../api/storeApi';
 import { formatDistanceKm } from '../lib/location';
@@ -34,15 +34,24 @@ export function StoreHeader({ store }: StoreHeaderProps) {
           style={{
             width: 64,
             height: 64,
-            borderRadius: 12,
+            borderRadius: 16,
             backgroundColor: '#E8F4FD',
             alignItems: 'center',
             justifyContent: 'center',
             borderWidth: 1,
             borderColor: '#5AAEE0',
+            overflow: 'hidden',
           }}
         >
-          <Ionicons name="storefront" size={32} color="#2B8FD4" />
+          {(store as unknown as { imageUrl?: string | null }).imageUrl ? (
+            <Image
+              source={{ uri: (store as unknown as { imageUrl: string }).imageUrl }}
+              style={{ width: 64, height: 64 }}
+              resizeMode="cover"
+            />
+          ) : (
+            <Ionicons name="storefront" size={32} color="#2B8FD4" />
+          )}
         </View>
 
         <View style={{ flex: 1 }}>

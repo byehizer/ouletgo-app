@@ -90,26 +90,28 @@ export default function StoreScreen() {
     }
     navigation.setOptions({
       title: store.name,
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginRight: 4 }}>
-          <FavoriteButton
-            type="store"
-            targetId={store.id}
-            meta={{
-              storeName: store.name,
-              address: store.address,
-              ratingAvg: store.ratingAvg,
-              ratingCount: store.ratingCount,
-            }}
-          />
-          <ReportIconButton
-            onPress={() => setReportVisible(true)}
-            pendingReview={hasActiveReport}
-          />
-        </View>
-      ),
+      headerRight: isAuthenticated
+        ? () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginRight: 4 }}>
+              <FavoriteButton
+                type="store"
+                targetId={store.id}
+                meta={{
+                  storeName: store.name,
+                  address: store.address,
+                  ratingAvg: store.ratingAvg,
+                  ratingCount: store.ratingCount,
+                }}
+              />
+              <ReportIconButton
+                onPress={() => setReportVisible(true)}
+                pendingReview={hasActiveReport}
+              />
+            </View>
+          )
+        : undefined,
     });
-  }, [navigation, store, hasActiveReport]);
+  }, [navigation, store, hasActiveReport, isAuthenticated]);
 
   useEffect(() => {
     void (async () => {

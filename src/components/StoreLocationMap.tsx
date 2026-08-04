@@ -79,7 +79,8 @@ export function StoreLocationMap({
             flexDirection: 'row',
             alignItems: 'flex-start',
             gap: 8,
-            padding: 12,
+            paddingHorizontal: 14,
+            paddingVertical: 12,
             backgroundColor: pressed ? '#F8FAFC' : '#FFFFFF',
           })}
         >
@@ -90,7 +91,7 @@ export function StoreLocationMap({
               Abrir en Google Maps
             </Text>
           </View>
-          <Ionicons name="open-outline" size={18} color="#94A3B8" />
+          <Ionicons name="map" size={18} color="#2B8FD4" />
         </Pressable>
       </View>
     </View>

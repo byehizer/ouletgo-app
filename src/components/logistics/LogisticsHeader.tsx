@@ -5,6 +5,38 @@ import { Pressable, Text, View, StyleSheet } from 'react-native';
 import { useLogistics } from '../../context/LogisticsContext';
 import { LogisticsModalSheet } from './LogisticsModalSheet';
 
+export function LogisticsIconButton() {
+  const { preference } = useLogistics();
+  const [sheetVisible, setSheetVisible] = useState(false);
+
+  const getIconName = () => {
+    if (!preference) return 'location-outline';
+    return preference.type === 'PICKUP' ? 'location-outline' : 'bicycle-outline';
+  };
+
+  return (
+    <>
+      <Pressable
+        onPress={() => setSheetVisible(true)}
+        style={({ pressed }) => ({
+          width: 48,
+          height: 48,
+          borderRadius: 10,
+          backgroundColor: '#FFFFFF',
+          borderWidth: 1,
+          borderColor: '#E2E8F0',
+          alignItems: 'center',
+          justifyContent: 'center',
+          opacity: pressed ? 0.85 : 1,
+        })}
+      >
+        <Ionicons name={getIconName()} size={22} color="#2B8FD4" />
+      </Pressable>
+      <LogisticsModalSheet visible={sheetVisible} onClose={() => setSheetVisible(false)} />
+    </>
+  );
+}
+
 export function LogisticsHeader() {
   const { preference, loading } = useLogistics();
   const [sheetVisible, setSheetVisible] = useState(false);

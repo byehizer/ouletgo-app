@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View, type ViewStyle } from 'react-native';
 
 interface SearchBarProps {
   value: string;
@@ -8,6 +8,7 @@ interface SearchBarProps {
   onLensPress?: () => void;
   activeFilterCount?: number;
   placeholder?: string;
+  containerStyle?: ViewStyle;
 }
 
 export function SearchBar({
@@ -17,16 +18,20 @@ export function SearchBar({
   onLensPress,
   activeFilterCount = 0,
   placeholder = 'Buscar productos…',
+  containerStyle,
 }: SearchBarProps) {
   return (
     <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginHorizontal: 16,
-        marginBottom: 12,
-        gap: 10,
-      }}
+      style={[
+        {
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginHorizontal: 16,
+          marginBottom: 12,
+          gap: 10,
+        },
+        containerStyle,
+      ]}
     >
       <View
         style={{

@@ -10,9 +10,9 @@ import {
   View,
   StyleSheet,
   useWindowDimensions,
-  SafeAreaView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { fetchCampaignDetails, type CampaignDetails } from '../../src/api/bannerApi';
 import { ProductCard } from '../../src/components/ProductCard';
