@@ -154,10 +154,13 @@ export default function MapScreen() {
   }, [stores, selectedStore]);
 
   const handleMapPress = useCallback(() => {
-    searchBarRef.current?.dismiss();
+    if (searchActive) {
+      searchBarRef.current?.dismiss();
+      setSearchActive(false);
+    }
     setSelectedStore(null);
     setFiltersExpanded(false);
-  }, []);
+  }, [searchActive]);
 
   const handleViewStore = useCallback(() => {
     if (!selectedStore) return;
@@ -267,7 +270,7 @@ export default function MapScreen() {
           </View>
         ) : null}
 
-        <View style={{ zIndex: 30 }} pointerEvents="box-none">
+        <View style={{ zIndex: 30 }} pointerEvents="auto" onTouchStart={(e) => e.stopPropagation()}>
           <StoreMapSearchBar
             ref={searchBarRef}
             origin={mapCenter}

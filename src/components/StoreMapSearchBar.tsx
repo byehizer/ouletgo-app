@@ -195,7 +195,10 @@ export const StoreMapSearchBar = forwardRef<StoreMapSearchBarHandle, StoreMapSea
     );
 
     return (
-      <View style={{ position: 'relative', zIndex: 40 }}>
+      <View
+        style={{ position: 'relative', zIndex: 40 }}
+        onTouchStart={(e) => e.stopPropagation()}
+      >
         <View style={{ opacity: 1 }}>
           <View
             style={{
