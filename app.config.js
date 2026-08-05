@@ -91,6 +91,7 @@ module.exports = () => {
           },
         },
       ],
+      '@react-native-google-signin/google-signin',
     ],
     experiments: {
       typedRoutes: true,
@@ -98,7 +99,7 @@ module.exports = () => {
     scheme: 'outletgo',
     extra: {
       eas: {
-        projectId: '06076a88-6c81-41ae-88f3-cad81c04c2f6',
+        projectId: '1bb401b9-ead8-4909-b865-4c42c35e2505',
       },
     },
   };

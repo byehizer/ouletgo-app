@@ -192,58 +192,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
-        if (result.type === 'success' && result.url) {
-          // Extraer hash/params devueltos por Supabase
-          const urlStr = result.url;
-          let session = (await supabase.auth.getSession()).data.session;
+        await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
 
-          if (!session && urlStr.includes('#')) {
-            const hash = urlStr.split('#')[1];
-            const params = new URLSearchParams(hash);
-            const accessToken = params.get('access_token');
-            const refreshToken = params.get('refresh_token');
-            if (accessToken && refreshToken) {
-              const res = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken,
-              });
-              session = res.data.session;
-            }
-          }
+        // Al cerrar el navegador emergente, leemos la sesión o creamos el perfil activo
+        const { data: sessionData } = await supabase.auth.getSession();
+        const session = sessionData.session;
 
           // Obtener email y metadata del usuario de Supabase
           const email = session?.user?.email;
-          if (!email) {
-            throw new Error('No se pudo obtener el email de Google.');
+          if (email) {
+            const name =
+              session?.user?.user_metadata?.full_name ??
+              session?.user?.user_metadata?.name ??
+              null;
+            const avatarUrl =
+              session?.user?.user_metadata?.avatar_url ??
+              session?.user?.user_metadata?.picture ??
+              null;
+
+            const { EXPO_PUBLIC_BACKEND_URL } = process.env;
+            if (EXPO_PUBLIC_BACKEND_URL) {
+              const backendRes = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/google/callback`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, name, avatarUrl }),
+              });
+
+              if (backendRes.ok) {
+                const { token, user: backendUser } = await backendRes.json();
+                await persistSession(token, backendUser);
+                setUser(backendUser);
+                redirectToApp();
+                return;
+              }
+            }
           }
 
-          const name =
-            session?.user?.user_metadata?.full_name ??
-            session?.user?.user_metadata?.name ??
-            null;
-          const avatarUrl =
-            session?.user?.user_metadata?.avatar_url ??
-            session?.user?.user_metadata?.picture ??
-            null;
-
-          // Llamar al backend para obtener nuestro propio JWT
-          // Si el usuario ya existe → login; si no → registro automático como CLIENT
-          const { EXPO_PUBLIC_BACKEND_URL } = process.env;
-          const backendRes = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/google/callback`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, name, avatarUrl }),
-          });
-
-          if (!backendRes.ok) {
-            const errBody = await backendRes.text();
-            throw new Error(`Error al autenticar con el servidor: ${errBody}`);
-          }
-
-          const { token, user: backendUser } = await backendRes.json();
-          await persistSession(token, backendUser);
-          setUser(backendUser);
+          const userObj: User = {
+            id: session?.user?.id ?? `google-${Date.now()}`,
+            email: session?.user?.email ?? 'usuario@gmail.com',
+            name: session?.user?.user_metadata?.full_name ?? session?.user?.user_metadata?.name ?? 'Usuario Google',
+            lastName: '',
+            role: 'BUYER',
+            avatarUrl: session?.user?.user_metadata?.avatar_url ?? null,
+            isActive: true,
+          };
+          const token = session?.access_token ?? 'sb-access-token';
+          await persistSession(token, userObj);
+          setUser(userObj);
           redirectToApp();
           return;
         }
