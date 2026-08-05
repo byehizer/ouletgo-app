@@ -54,7 +54,7 @@ export function ChatComposer({
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
-      allowsEditing: true,
+      allowsEditing: false, // <-- Desactivado para no forzar el editor nativo que se rompe con capturas de pantalla largas
     });
 
     if (result.canceled || !result.assets[0]?.uri) return;
