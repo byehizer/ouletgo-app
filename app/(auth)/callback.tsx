@@ -37,24 +37,26 @@ export default function OAuthCallbackScreen() {
         }
 
         // ── Flujo 2: Supabase OAuth con hash en la URL (#access_token=...) ─
-        let session = (await supabase.auth.getSession()).data?.session;
+        let session = null;
+
+        const initialUrl = await Linking.getInitialURL();
+        if (initialUrl && initialUrl.includes('#')) {
+          const hash = initialUrl.split('#')[1];
+          const urlParams = new URLSearchParams(hash);
+          const accessToken = urlParams.get('access_token');
+          const refreshToken = urlParams.get('refresh_token');
+
+          if (accessToken && refreshToken) {
+            const res = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+            session = res.data?.session;
+          }
+        }
 
         if (!session) {
-          const initialUrl = await Linking.getInitialURL();
-          if (initialUrl && initialUrl.includes('#')) {
-            const hash = initialUrl.split('#')[1];
-            const urlParams = new URLSearchParams(hash);
-            const accessToken = urlParams.get('access_token');
-            const refreshToken = urlParams.get('refresh_token');
-
-            if (accessToken && refreshToken) {
-              const res = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken,
-              });
-              session = res.data?.session;
-            }
-          }
+          session = (await supabase.auth.getSession()).data?.session;
         }
 
         if (session?.user?.email) {

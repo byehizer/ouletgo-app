@@ -152,6 +152,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     await unregisterPushNotifications();
+    
+    // Si hay variables de Supabase, cerrar sesión también allí
+    // para evitar que queden sesiones pegadas al volver a entrar con Google.
+    if (process.env.EXPO_PUBLIC_SUPABASE_URL) {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        // Ignorar errores de red al cerrar sesión de Supabase
+      }
+    }
+
     await clearSession();
     setUser(null);
     redirectToLogin();
@@ -196,9 +207,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (result.type === 'success' && result.url) {
           // Extraer hash/params devueltos por Supabase
           const urlStr = result.url;
-          let session = (await supabase.auth.getSession()).data.session;
+          let session = null;
 
-          if (!session && urlStr.includes('#')) {
+          // PRIORIDAD: Siempre extraer el nuevo token del link si viene en el hash
+          if (urlStr.includes('#')) {
             const hash = urlStr.split('#')[1];
             const params = new URLSearchParams(hash);
             const accessToken = params.get('access_token');
@@ -210,6 +222,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               });
               session = res.data.session;
             }
+          }
+
+          // Fallback: si no vino hash, usar la sesión actual de Supabase
+          if (!session) {
+            session = (await supabase.auth.getSession()).data.session;
           }
 
           // Obtener email y metadata del usuario de Supabase
