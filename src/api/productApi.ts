@@ -124,6 +124,7 @@ function parseProductDetail(raw: unknown): ProductDetail {
       ? (o['image_urls'] as unknown[]).filter((u): u is string => typeof u === 'string')
       : [];
 
+  const thumbnailUrl = o['thumbnailUrl'] ?? o['thumbnail_url'];
   const storeImageUrl = o['storeImageUrl'] ?? o['store_image_url'] ?? o['storeHeaderImage'] ?? o['store_header_image'];
   const storeHeaderImage = o['storeHeaderImage'] ?? o['store_header_image'] ?? storeImageUrl;
 
