@@ -122,6 +122,8 @@ export async function mockFetchProductDetail(productId: string): Promise<Product
     price: basePrice,
     storeId,
     storeName,
+    storeImageUrl: `https://picsum.photos/seed/${storeId}/200/200`,
+    storeHeaderImage: `https://picsum.photos/seed/${storeId}/200/200`,
     ratingAvg: idx % 3 === 0 ? null : 4.2,
     ratingCount: idx * 2,
     variations: buildVariations(productId, basePrice, sizes.length > 0 ? sizes : fallbackSizes),
