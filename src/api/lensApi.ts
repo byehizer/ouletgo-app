@@ -11,7 +11,7 @@
  *   Response: LensSearchResult
  */
 import { apiClient } from './client';
-import { USE_MOCKS } from '../config/env';
+import { API_BASE_URL, USE_MOCKS } from '../config/env';
 import { mockSearchByImage } from './mock/lensMock';
 
 import type { CatalogProduct } from './catalogApi';

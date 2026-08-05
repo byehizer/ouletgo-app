@@ -30,7 +30,7 @@ type SearchState =
 
 /** Sin `aspect`: el recorte nativo permite elegir cualquier zona (no solo cuadrado 1:1). */
 const IMAGE_PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
-  mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  mediaTypes: 'images',
   quality: 0.85,
   allowsEditing: true,
 };

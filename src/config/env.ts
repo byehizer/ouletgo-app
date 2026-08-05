@@ -2,7 +2,7 @@
  * Variables de entorno de la app.
  */
 export const API_BASE_URL: string =
-  process.env['EXPO_PUBLIC_BACKEND_URL'] ?? 'https://outletgo-api.onrender.com';
+  process.env['EXPO_PUBLIC_BACKEND_URL'] ?? 'https://outletgo-backend.onrender.com';
 
 /** Activa respuestas ficticias sin backend (desarrollo / demo). */
 export const USE_MOCKS: boolean =
