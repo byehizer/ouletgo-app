@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -16,7 +16,7 @@ import {
 import { fetchActiveBanners, type PromotionalBanner } from '../api/bannerApi';
 import { BrandLogo } from './BrandLogo';
 
-const SHEIN_FALLBACK_BANNERS: (PromotionalBanner & { badge?: string; ctaText?: string })[] = [
+const FALLBACK_BANNERS: (PromotionalBanner & { badge?: string; ctaText?: string })[] = [
   {
     id: 'shein-fallback-1',
     title: 'OUTLET DE AVELLANEDA',
@@ -39,17 +39,6 @@ const SHEIN_FALLBACK_BANNERS: (PromotionalBanner & { badge?: string; ctaText?: s
     startDate: '',
     endDate: '',
   },
-  {
-    id: 'shein-fallback-3',
-    title: 'BÚSQUEDA LENS CON IA',
-    description: 'Subí una foto de cualquier prenda y encontrá similares',
-    imageUrl: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=800&auto=format&fit=crop',
-    type: 'CAMPAIGN',
-    badge: 'ESPECIAL LENS 📷',
-    ctaText: 'Probar Lens →',
-    startDate: '',
-    endDate: '',
-  },
 ];
 
 export function PromotionalBannersCarousel() {
@@ -59,18 +48,19 @@ export function PromotionalBannersCarousel() {
   const [banners, setBanners] = useState<PromotionalBanner[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
-  const bannerWidth = width - 32; // 16px de margen a cada lado
+  const bannerWidth = width - 32;
   const snapInterval = bannerWidth + 12;
 
   useEffect(() => {
+    console.log('[BANNERS CAROUSEL] Obteniendo banners activos desde backend...');
     void (async () => {
       try {
         const active = await fetchActiveBanners();
+        console.log('[BANNERS CAROUSEL] Banners recibidos del backend:', JSON.stringify(active, null, 2));
         setBanners(active);
       } catch (err) {
-        console.warn('Error al cargar banners:', err);
+        console.error('[BANNERS CAROUSEL] Error al cargar banners:', err);
       } finally {
         setLoading(false);
       }
@@ -85,14 +75,9 @@ export function PromotionalBannersCarousel() {
     }
   };
 
-  const handleBannerPress = (banner: PromotionalBanner & { ctaText?: string }) => {
-    if (banner.id === 'shein-fallback-3') {
-      router.push('/search/visual');
-      return;
-    }
-    if (banner.id.startsWith('shein-fallback')) {
-      return;
-    }
+  const handleBannerPress = (banner: PromotionalBanner) => {
+    console.log('[BANNERS CAROUSEL] Banner presionado:', banner.id, banner.type);
+    if (banner.id.startsWith('shein-fallback')) return;
 
     if (banner.type === 'CAMPAIGN') {
       router.push(`/campaign/${banner.id}` as any);
@@ -113,11 +98,11 @@ export function PromotionalBannersCarousel() {
     );
   }
 
-  const displayBanners = banners.length > 0 ? banners : SHEIN_FALLBACK_BANNERS;
+  const displayBanners = banners.length > 0 ? banners : FALLBACK_BANNERS;
+  console.log('[BANNERS CAROUSEL] Renderizando cantidad de banners:', displayBanners.length);
 
   return (
     <View style={styles.container}>
-      {/* Carrusel Horizontal estilo SHEIN */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -128,8 +113,7 @@ export function PromotionalBannersCarousel() {
         scrollEventThrottle={16}
         contentContainerStyle={styles.listContent}
       >
-        {displayBanners.map((item, idx) => {
-          const hasImageError = imageErrors[item.id];
+        {displayBanners.map((item) => {
           const badgeText = (item as any).badge ?? (item.type === 'CAMPAIGN' ? 'PROMO DÍAS 🔥' : 'DESTACADO ⭐');
           const ctaText = (item as any).ctaText ?? 'Ver Ofertas →';
 
@@ -140,34 +124,29 @@ export function PromotionalBannersCarousel() {
               style={({ pressed }) => [
                 styles.card,
                 { width: bannerWidth },
-                pressed && { opacity: 0.94, transform: [{ scale: 0.99 }] },
+                pressed && { opacity: 0.95 },
               ]}
             >
-              {/* Imagen o Fondo Gradient Dark si falla */}
-              {!hasImageError && item.imageUrl ? (
-                <Image
-                  source={{ uri: item.imageUrl }}
-                  style={styles.image}
-                  resizeMode="cover"
-                  onError={() => setImageErrors((prev) => ({ ...prev, [item.id]: true }))}
-                />
-              ) : (
-                <View style={styles.fallbackBackground}>
-                  <BrandLogo variant="isotype" width={48} height={48} />
-                </View>
-              )}
+              {/* Imagen principal de fondo */}
+              <Image
+                source={{ uri: item.imageUrl }}
+                style={styles.image}
+                resizeMode="cover"
+                onLoad={() => console.log(`[BANNERS CAROUSEL] Imagen cargada OK para banner ${item.id}`)}
+                onError={(e) => console.warn(`[BANNERS CAROUSEL] Error cargando imagen para banner ${item.id}:`, e.nativeEvent.error)}
+              />
 
-              {/* Degradado / Máscara de legibilidad */}
+              {/* Degradado / Sombra oscura en la parte inferior */}
               <View style={styles.darkOverlay} />
 
-              {/* Badge superior estilo SHEIN */}
+              {/* Badge superior */}
               <View style={styles.topBadgeContainer}>
                 <View style={styles.badgePill}>
                   <Text style={styles.badgeText}>{badgeText}</Text>
                 </View>
               </View>
 
-              {/* Contenido inferior: Título + Descripción + CTA */}
+              {/* Información y botón CTA en la parte inferior */}
               <View style={styles.textContent}>
                 <Text style={styles.title} numberOfLines={1}>
                   {item.title}
@@ -189,7 +168,7 @@ export function PromotionalBannersCarousel() {
         })}
       </ScrollView>
 
-      {/* Paginador de Puntitos estilo SHEIN */}
+      {/* Paginador de puntitos */}
       {displayBanners.length > 1 ? (
         <View style={styles.dotsContainer}>
           {displayBanners.map((_, i) => (
@@ -209,120 +188,108 @@ export function PromotionalBannersCarousel() {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 14,
-    backgroundColor: 'transparent',
+    marginVertical: 12,
   },
   listContent: {
     paddingHorizontal: 16,
     gap: 12,
   },
   loadingContainer: {
-    height: 160,
+    height: 140,
     justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
-    height: 165,
-    borderRadius: 16,
+    height: 160,
+    borderRadius: 14,
     overflow: 'hidden',
-    backgroundColor: '#0F172A', // Fondo oscuro azul noche en lugar de gris feo
+    backgroundColor: '#0F172A',
     position: 'relative',
-    elevation: 3,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
   },
   image: {
     width: '100%',
     height: '100%',
-  },
-  fallbackBackground: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#0F172A',
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   darkOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.45)', // Oscurece sutilmente la imagen para que el texto resalte
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
   },
   topBadgeContainer: {
     position: 'absolute',
     top: 12,
     left: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
+    zIndex: 10,
   },
   badgePill: {
-    backgroundColor: '#FF3B30', // Rojo SHEIN / Ofertas vibrante
+    backgroundColor: '#FF3B30',
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 20,
+    borderRadius: 12,
   },
   badgeText: {
     color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    fontSize: 11,
+    fontWeight: '800',
   },
   textContent: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 14,
+    bottom: 12,
+    left: 14,
+    right: 14,
+    zIndex: 10,
   },
   title: {
-    fontSize: 17,
-    fontWeight: '900',
+    fontSize: 16,
+    fontWeight: '800',
     color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
   },
   description: {
     fontSize: 12,
-    color: '#F1F5F9',
+    color: '#E2E8F0',
     marginTop: 2,
-    fontWeight: '500',
   },
   ctaRow: {
-    marginTop: 8,
+    marginTop: 6,
     flexDirection: 'row',
-    alignItems: 'center',
   },
   ctaButton: {
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
   ctaButtonText: {
     color: '#0F172A',
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   dotsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 6,
-    marginTop: 10,
+    marginTop: 8,
   },
   dot: {
     borderRadius: 3,
   },
   activeDot: {
-    width: 18,
-    height: 6,
+    width: 16,
+    height: 5,
     backgroundColor: '#2B8FD4',
   },
   inactiveDot: {
-    width: 6,
-    height: 6,
+    width: 5,
+    height: 5,
     backgroundColor: '#CBD5E1',
   },
 });
