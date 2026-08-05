@@ -43,9 +43,9 @@ export function StoreHeader({ store }: StoreHeaderProps) {
             overflow: 'hidden',
           }}
         >
-          {(store as unknown as { imageUrl?: string | null }).imageUrl ? (
+          {store.imageUrl || store.headerImage ? (
             <Image
-              source={{ uri: (store as unknown as { imageUrl: string }).imageUrl }}
+              source={{ uri: (store.imageUrl || store.headerImage)! }}
               style={{ width: 64, height: 64 }}
               resizeMode="cover"
             />

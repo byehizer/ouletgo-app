@@ -20,6 +20,8 @@ export interface StoreProfile {
   name: string;
   description: string | null;
   address: string;
+  imageUrl?: string | null;
+  headerImage?: string | null;
   latitude: number;
   longitude: number;
   ratingAvg: number | null;

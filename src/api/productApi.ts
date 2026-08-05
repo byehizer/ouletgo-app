@@ -32,6 +32,8 @@ export interface ProductDetail {
   price: number;
   storeId: string;
   storeName: string;
+  storeImageUrl?: string | null;
+  storeHeaderImage?: string | null;
   ratingAvg: number | null;
   ratingCount: number;
   variations: ProductVariation[];

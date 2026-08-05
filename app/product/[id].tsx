@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
+  Image,
   Pressable,
   ScrollView,
   Text,
@@ -229,7 +230,7 @@ export default function ProductDetailScreen() {
               gap: 10,
             }}
           >
-            {/* Placeholder circular de tienda — si el backend devolviera storeImageUrl se mostraría aquí */}
+            {/* Foto de perfil de la tienda o icono predeterminado */}
             <View
               style={{
                 width: 42,
@@ -240,9 +241,18 @@ export default function ProductDetailScreen() {
                 justifyContent: 'center',
                 borderWidth: 1,
                 borderColor: '#5AAEE0',
+                overflow: 'hidden',
               }}
             >
-              <Ionicons name="storefront" size={20} color="#2B8FD4" />
+              {product.storeImageUrl || product.storeHeaderImage ? (
+                <Image
+                  source={{ uri: (product.storeImageUrl || product.storeHeaderImage)! }}
+                  style={{ width: 42, height: 42 }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Ionicons name="storefront" size={20} color="#2B8FD4" />
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 12, color: '#64748B' }}>Vendido por</Text>
