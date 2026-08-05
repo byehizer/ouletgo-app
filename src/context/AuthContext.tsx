@@ -212,19 +212,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
 
-          const userObj: User = {
-            id: session?.user?.id ?? `sb-${Date.now()}`,
-            email: session?.user?.email ?? 'usuario@gmail.com',
-            name: session?.user?.user_metadata?.full_name ?? session?.user?.user_metadata?.name ?? 'Usuario Google',
-            lastName: session?.user?.user_metadata?.custom_claims?.last_name ?? '',
-            role: 'BUYER',
-            avatarUrl: session?.user?.user_metadata?.avatar_url ?? session?.user?.user_metadata?.picture ?? null,
-            isActive: true,
-          };
+          // Obtener email y metadata del usuario de Supabase
+          const email = session?.user?.email;
+          if (!email) {
+            throw new Error('No se pudo obtener el email de Google.');
+          }
 
-          const token = session?.access_token ?? 'sb-access-token';
-          await persistSession(token, userObj);
-          setUser(userObj);
+          const name =
+            session?.user?.user_metadata?.full_name ??
+            session?.user?.user_metadata?.name ??
+            null;
+          const avatarUrl =
+            session?.user?.user_metadata?.avatar_url ??
+            session?.user?.user_metadata?.picture ??
+            null;
+
+          // Llamar al backend para obtener nuestro propio JWT
+          // Si el usuario ya existe → login; si no → registro automático como CLIENT
+          const { EXPO_PUBLIC_BACKEND_URL } = process.env;
+          const backendRes = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/auth/google/callback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, name, avatarUrl }),
+          });
+
+          if (!backendRes.ok) {
+            const errBody = await backendRes.text();
+            throw new Error(`Error al autenticar con el servidor: ${errBody}`);
+          }
+
+          const { token, user: backendUser } = await backendRes.json();
+          await persistSession(token, backendUser);
+          setUser(backendUser);
           redirectToApp();
           return;
         }
