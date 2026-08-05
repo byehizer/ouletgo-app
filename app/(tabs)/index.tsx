@@ -151,7 +151,6 @@ function TopRatedStoreCard({ store, onPress }: { store: TopRatedStore; onPress: 
   );
 }
 
-// Tarjeta horizontal compacta de producto para "Recién Llegados" y "Favoritos"
 function CompactProductCard({
   product,
   onPress,
@@ -161,23 +160,14 @@ function CompactProductCard({
   onPress: () => void;
   isAuthenticated?: boolean;
 }) {
-  const hasRating = product.ratingAvg != null && product.ratingAvg > 0;
+  const hasRating =
+    product.ratingAvg != null &&
+    product.ratingAvg > 0 &&
+    product.ratingCount != null &&
+    product.ratingCount > 0;
 
-  const renderStars = (avg: number) => {
-    const stars = [];
-    const full = Math.floor(avg);
-    for (let i = 0; i < 5; i++) {
-      stars.push(
-        <Ionicons
-          key={i}
-          name={i < full ? 'star' : 'star-outline'}
-          size={10}
-          color="#F59E0B"
-        />
-      );
-    }
-    return stars;
-  };
+  const ratingText = hasRating ? product.ratingAvg!.toFixed(1) : '0.0';
+  const ratingCountText = `(${product.ratingCount ?? 0})`;
 
   return (
     <Pressable
@@ -267,7 +257,7 @@ function CompactProductCard({
         ) : null}
       </View>
 
-      {/* Zona inferior: precio + rating */}
+      {/* Zona inferior: precio + rating prolijo con 1 sola estrella */}
       <View
         style={{
           paddingHorizontal: 10,
@@ -276,27 +266,24 @@ function CompactProductCard({
           alignItems: 'center',
           justifyContent: 'space-between',
           backgroundColor: '#FFFFFF',
+          gap: 4,
         }}
       >
-        <Text style={{ fontSize: 16, fontWeight: '900', color: '#1A3F7A', letterSpacing: -0.3 }}>
+        <Text
+          numberOfLines={1}
+          style={{ fontSize: 13, fontWeight: '900', color: '#1A3F7A', letterSpacing: -0.3, flex: 1 }}
+        >
           {formatARS(product.price)}
         </Text>
-        {hasRating ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-            {renderStars(product.ratingAvg!)}
-          </View>
-        ) : (
-          <View
-            style={{
-              backgroundColor: '#F0F9FF',
-              borderRadius: 6,
-              paddingHorizontal: 6,
-              paddingVertical: 2,
-            }}
-          >
-            <Text style={{ fontSize: 9, color: '#2B8FD4', fontWeight: '700' }}>NUEVO</Text>
-          </View>
-        )}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+          <Ionicons name="star" size={12} color={hasRating ? '#F59E0B' : '#94A3B8'} />
+          <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>
+            {ratingText}
+          </Text>
+          <Text style={{ fontSize: 10, color: '#64748B' }}>
+            {ratingCountText}
+          </Text>
+        </View>
       </View>
     </Pressable>
   );
