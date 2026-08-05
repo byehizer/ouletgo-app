@@ -49,6 +49,7 @@ function parseUser(raw: unknown): User {
   const lastName = o['lastName'] ?? o['last_name'];
   const avatarUrl = o['avatarUrl'] ?? o['avatar_url'];
   const isActive = o['isActive'] ?? o['is_active'];
+  const authProvider = o['authProvider'];
 
   return {
     id,
@@ -58,6 +59,7 @@ function parseUser(raw: unknown): User {
     lastName: typeof lastName === 'string' ? lastName : '',
     avatarUrl: typeof avatarUrl === 'string' ? avatarUrl : null,
     isActive: typeof isActive === 'boolean' ? isActive : true,
+    authProvider: authProvider === 'GOOGLE' ? 'GOOGLE' : 'LOCAL',
   };
 }
 

@@ -37,6 +37,7 @@ export interface User {
   lastName: string;
   avatarUrl: string | null;
   isActive: boolean;
+  authProvider?: 'LOCAL' | 'GOOGLE';
 }
 
 // ---------------------------------------------------------------------------

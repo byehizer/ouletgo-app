@@ -118,12 +118,14 @@ export default function ProfileScreen() {
           subtitle="Nombre, apellido y foto"
           onPress={() => router.push('/profile/edit')}
         />
-        <ProfileMenuCard
-          icon="mail-outline"
-          title="Email y contraseña"
-          subtitle="Cambiar email o actualizar contraseña"
-          onPress={() => router.push('/profile/edit')}
-        />
+        {user?.authProvider !== 'GOOGLE' && (
+          <ProfileMenuCard
+            icon="mail-outline"
+            title="Email y contraseña"
+            subtitle="Cambiar email o actualizar contraseña"
+            onPress={() => router.push('/profile/edit')}
+          />
+        )}
         <ProfileMenuCard
           icon="heart"
           title="Favoritos"

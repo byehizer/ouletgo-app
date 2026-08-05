@@ -70,6 +70,7 @@ function parseUser(raw: unknown): User {
   const lastName = obj['lastName'] ?? obj['last_name'];
   const avatarUrl = obj['avatarUrl'] ?? obj['avatar_url'] ?? null;
   const isActive = obj['isActive'] ?? obj['is_active'];
+  const authProvider = obj['authProvider'];
 
   if (typeof id !== 'string' || typeof email !== 'string') {
     throw new Error('Respuesta de usuario inválida.');
@@ -83,6 +84,7 @@ function parseUser(raw: unknown): User {
     lastName: typeof lastName === 'string' ? lastName : '',
     avatarUrl: typeof avatarUrl === 'string' ? avatarUrl : null,
     isActive: typeof isActive === 'boolean' ? isActive : true,
+    authProvider: authProvider === 'GOOGLE' ? 'GOOGLE' : 'LOCAL',
   };
 }
 

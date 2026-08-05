@@ -208,59 +208,63 @@ export default function EditProfileScreen() {
             />
           </SectionCard>
 
-          <SectionCard title="Email">
-            <Text style={styles.sectionHint}>
-              Para cambiar el email necesitás confirmar con tu contraseña actual.
-            </Text>
-            <AuthTextInput
-              label="Nuevo email"
-              value={newEmail}
-              onChangeText={setNewEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <AuthTextInput
-              label="Contraseña actual"
-              value={emailPassword}
-              onChangeText={setEmailPassword}
-              secureTextEntry
-            />
-            <AuthButton
-              label="Actualizar email"
-              variant="secondary"
-              onPress={() => void handleSaveEmail()}
-              loading={loadingEmail}
-              disabled={loadingEmail}
-            />
-          </SectionCard>
+          {user?.authProvider !== 'GOOGLE' && (
+            <>
+              <SectionCard title="Email">
+                <Text style={styles.sectionHint}>
+                  Para cambiar el email necesitás confirmar con tu contraseña actual.
+                </Text>
+                <AuthTextInput
+                  label="Nuevo email"
+                  value={newEmail}
+                  onChangeText={setNewEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+                <AuthTextInput
+                  label="Contraseña actual"
+                  value={emailPassword}
+                  onChangeText={setEmailPassword}
+                  secureTextEntry
+                />
+                <AuthButton
+                  label="Actualizar email"
+                  variant="secondary"
+                  onPress={() => void handleSaveEmail()}
+                  loading={loadingEmail}
+                  disabled={loadingEmail}
+                />
+              </SectionCard>
 
-          <SectionCard title="Contraseña">
-            <AuthTextInput
-              label="Contraseña actual"
-              value={currentPassword}
-              onChangeText={setCurrentPassword}
-              secureTextEntry
-            />
-            <AuthTextInput
-              label="Nueva contraseña"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry
-            />
-            <AuthTextInput
-              label="Repetir nueva contraseña"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-            />
-            <AuthButton
-              label="Cambiar contraseña"
-              variant="secondary"
-              onPress={() => void handleChangePassword()}
-              loading={loadingPassword}
-              disabled={loadingPassword}
-            />
-          </SectionCard>
+              <SectionCard title="Contraseña">
+                <AuthTextInput
+                  label="Contraseña actual"
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                  secureTextEntry
+                />
+                <AuthTextInput
+                  label="Nueva contraseña"
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  secureTextEntry
+                />
+                <AuthTextInput
+                  label="Repetir nueva contraseña"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry
+                />
+                <AuthButton
+                  label="Cambiar contraseña"
+                  variant="secondary"
+                  onPress={() => void handleChangePassword()}
+                  loading={loadingPassword}
+                  disabled={loadingPassword}
+                />
+              </SectionCard>
+            </>
+          )}
 
           <Pressable onPress={() => router.back()} style={styles.backLink}>
             <Text style={styles.backLinkText}>Volver al perfil</Text>
