@@ -9,6 +9,8 @@ export interface PromotionalBanner {
   description: string | null;
   imageUrl: string;
   type: 'CAMPAIGN' | 'STORE' | 'PRODUCT';
+  targetStoreId?: string | null;
+  targetProductId?: string | null;
   startDate: string;
   endDate: string;
 }

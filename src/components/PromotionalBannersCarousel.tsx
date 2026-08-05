@@ -37,13 +37,16 @@ export function PromotionalBannersCarousel() {
 
   const handleBannerPress = (banner: PromotionalBanner) => {
     if (banner.type === 'CAMPAIGN') {
+      // Abre la pantalla de campaña con tiendas y productos asociados
       router.push(`/campaign/${banner.id}` as any);
     } else if (banner.type === 'STORE') {
-      // Navegación directa a la tienda
-      router.push(`/store/${banner.id}` as any);
+      // Redirige directamente al perfil de la tienda promocionada
+      const targetId = banner.targetStoreId || banner.id;
+      router.push(`/store/${targetId}` as any);
     } else if (banner.type === 'PRODUCT') {
-      // Navegación directa al producto
-      router.push(`/product/${banner.id}` as any);
+      // Redirige directamente a la ficha del producto promocionado
+      const targetId = banner.targetProductId || banner.id;
+      router.push(`/product/${targetId}` as any);
     }
   };
 
