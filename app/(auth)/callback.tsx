@@ -39,9 +39,14 @@ export default function OAuthCallbackScreen() {
         // ── Flujo 2: Supabase OAuth con hash en la URL (#access_token=...) ─
         let session = null;
 
-        const initialUrl = await Linking.getInitialURL();
-        if (initialUrl && initialUrl.includes('#')) {
-          const hash = initialUrl.split('#')[1];
+        // Intentar obtener la URL de Linking.parseInitialURL o de la URL actual si fue un evento
+        const urlObj = await Linking.getInitialURL();
+        let targetUrl = urlObj;
+        
+        // El router en Expo ya nos pasa params. Pero el hash no siempre está.
+        // Si no tenemos URL inicial clara, buscamos si hay sesión en Supabase directamente.
+        if (targetUrl && targetUrl.includes('#')) {
+          const hash = targetUrl.split('#')[1];
           const urlParams = new URLSearchParams(hash);
           const accessToken = urlParams.get('access_token');
           const refreshToken = urlParams.get('refresh_token');
@@ -87,7 +92,13 @@ export default function OAuthCallbackScreen() {
           return;
         }
 
-        setError('No se recibió el token de autenticación.');
+        // Si no se pudo procesar aquí, puede que AuthContext lo esté manejando.
+        // Solo mostraremos error si han pasado unos segundos sin respuesta.
+        setTimeout(() => {
+          if (!error) {
+            setError('No se recibió el token de autenticación. Intentá iniciar sesión nuevamente.');
+          }
+        }, 5000);
       } catch (err) {
         setError(getAuthErrorMessage(err));
       }
