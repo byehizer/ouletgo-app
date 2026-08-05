@@ -128,6 +128,20 @@ function parseProductDetail(raw: unknown): ProductDetail {
   const storeImageUrl = o['storeImageUrl'] ?? o['store_image_url'] ?? o['storeHeaderImage'] ?? o['store_header_image'];
   const storeHeaderImage = o['storeHeaderImage'] ?? o['store_header_image'] ?? storeImageUrl;
 
+  const visibleReviews = reviews.filter((r) => r.isVisible);
+  let ratingAvg: number | null = typeof o['ratingAvg'] === 'number' ? o['ratingAvg'] : null;
+  let ratingCount: number = typeof o['ratingCount'] === 'number' ? o['ratingCount'] : 0;
+
+  if (visibleReviews.length > 0) {
+    ratingCount = visibleReviews.length;
+    const sum = visibleReviews.reduce((acc, r) => acc + r.rating, 0);
+    ratingAvg = Number((sum / visibleReviews.length).toFixed(1));
+  } else if (reviews.length > 0) {
+    ratingCount = reviews.length;
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    ratingAvg = Number((sum / reviews.length).toFixed(1));
+  }
+
   return {
     id,
     name,
@@ -139,8 +153,8 @@ function parseProductDetail(raw: unknown): ProductDetail {
     storeName: typeof o['storeName'] === 'string' ? o['storeName'] : '',
     storeImageUrl: typeof storeImageUrl === 'string' ? storeImageUrl : null,
     storeHeaderImage: typeof storeHeaderImage === 'string' ? storeHeaderImage : null,
-    ratingAvg: typeof o['ratingAvg'] === 'number' ? o['ratingAvg'] : null,
-    ratingCount: typeof o['ratingCount'] === 'number' ? o['ratingCount'] : 0,
+    ratingAvg,
+    ratingCount,
     variations,
     reviews,
   };
