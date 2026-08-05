@@ -926,8 +926,17 @@ export default function HomeScreen() {
         animationType="fade"
         onRequestClose={handleCloseWelcome}
       >
-        <View style={modalStyles.overlay}>
-          <View style={modalStyles.card}>
+        <Pressable style={modalStyles.overlay} onPress={handleCloseWelcome}>
+          <Pressable style={modalStyles.card} onPress={(e) => e.stopPropagation()}>
+            {/* Botón X de Cierre */}
+            <Pressable
+              onPress={handleCloseWelcome}
+              hitSlop={12}
+              style={modalStyles.closeButton}
+            >
+              <Ionicons name="close" size={20} color={Colors.text.muted} />
+            </Pressable>
+
             {/* Logo Circular */}
             <View style={modalStyles.logoContainer}>
               <Image
@@ -991,8 +1000,8 @@ export default function HomeScreen() {
             >
               <Text style={modalStyles.btnText}>Comenzar a explorar</Text>
             </Pressable>
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
     </View>
   );
@@ -1019,6 +1028,21 @@ const modalStyles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 24,
     elevation: 8,
+    position: 'relative',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
   },
   logoContainer: {
     width: 64,

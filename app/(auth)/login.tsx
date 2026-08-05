@@ -81,82 +81,60 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F5F7FA' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       {/* Header Fijo */}
       <View
         style={{
-          height: 56,
+          height: 48,
           flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: 16,
-          backgroundColor: '#F5F7FA',
-          borderBottomWidth: 1,
-          borderColor: '#E2E8F0',
         }}
       >
         <Pressable
           onPress={handleBack}
+          hitSlop={8}
           style={({ pressed }) => [
             {
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: '#FFFFFF',
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: '#F8FAFC',
               borderWidth: 1,
               borderColor: '#E2E8F0',
               justifyContent: 'center',
               alignItems: 'center',
-              shadowColor: '#0F172A',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.04,
-              shadowRadius: 4,
-              elevation: 1,
             },
             pressed && { opacity: 0.8 },
           ]}
         >
-          <Ionicons name="arrow-back" size={20} color="#475569" />
+          <Ionicons name="arrow-back" size={18} color="#475569" />
         </Pressable>
       </View>
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'center',
-            paddingHorizontal: 20,
-            paddingVertical: 32,
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'space-between',
+            paddingHorizontal: 24,
+            paddingTop: 8,
+            paddingBottom: 24,
           }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
         >
-          {/* Logo */}
-          <AuthBrandHeader />
+          <View style={{ width: '100%', alignItems: 'center' }}>
+            {/* Logo */}
+            <AuthBrandHeader />
 
-          {/* Card */}
-          <View
-            style={{
-              backgroundColor: '#FFFFFF',
-              borderRadius: 16,
-              padding: 24,
-              width: '100%',
-              maxWidth: 420,
-              alignSelf: 'center',
-              shadowColor: '#0F172A',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.08,
-              shadowRadius: 16,
-              elevation: 4,
-            }}
-          >
             <Text
               style={{
-                fontSize: 20,
-                fontWeight: '700',
+                fontSize: 22,
+                fontWeight: '800',
                 color: '#0F172A',
-                marginBottom: 20,
+                marginBottom: 16,
                 textAlign: 'center',
               }}
             >
@@ -166,20 +144,20 @@ export default function LoginScreen() {
             {USE_MOCKS ? (
               <View
                 style={{
+                  width: '100%',
                   backgroundColor: '#E8F4FD',
                   borderRadius: 10,
-                  padding: 14,
-                  marginBottom: 20,
+                  padding: 10,
+                  marginBottom: 12,
                   borderWidth: 1,
                   borderColor: '#5AAEE0',
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#1A3F7A', marginBottom: 6 }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: '#1A3F7A', marginBottom: 2 }}>
                   Modo demo
                 </Text>
-                <Text style={{ fontSize: 13, color: '#475569', lineHeight: 20 }}>
-                  {MOCK_DEMO_EMAIL}{'\n'}
-                  {MOCK_DEMO_PASSWORD}
+                <Text style={{ fontSize: 12, color: '#475569' }}>
+                  {MOCK_DEMO_EMAIL} | {MOCK_DEMO_PASSWORD}
                 </Text>
               </View>
             ) : null}
@@ -187,10 +165,11 @@ export default function LoginScreen() {
             {error ? (
               <View
                 style={{
+                  width: '100%',
                   backgroundColor: '#FEF2F2',
                   borderRadius: 10,
-                  padding: 12,
-                  marginBottom: 16,
+                  padding: 10,
+                  marginBottom: 12,
                   borderWidth: 1,
                   borderColor: '#FECACA',
                 }}
@@ -199,33 +178,37 @@ export default function LoginScreen() {
               </View>
             ) : null}
 
-            <AuthTextInput
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              textContentType="emailAddress"
-              autoComplete="email"
-              placeholder="tu@email.com"
-            />
+            <View style={{ width: '100%' }}>
+              <AuthTextInput
+                label="Email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                textContentType="emailAddress"
+                autoComplete="email"
+                placeholder="tu@email.com"
+              />
 
-            <AuthTextInput
-              label="Contraseña"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              textContentType="password"
-              autoComplete="password"
-              placeholder="Tu contraseña"
-            />
+              <AuthTextInput
+                label="Contraseña"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                textContentType="password"
+                autoComplete="password"
+                placeholder="Tu contraseña"
+              />
+            </View>
 
-            <AuthButton label="Ingresar" loading={loading} onPress={handleLogin} />
+            <View style={{ width: '100%', marginTop: 4 }}>
+              <AuthButton label="Ingresar" loading={loading} onPress={handleLogin} />
+            </View>
 
             <Pressable
               onPress={() => router.push('/(auth)/recover')}
-              style={{ alignItems: 'center', paddingVertical: 4, marginBottom: 8 }}
+              style={{ alignItems: 'center', paddingVertical: 10 }}
             >
-              <Text style={{ fontSize: 14, color: '#1A3F7A', fontWeight: '500' }}>
+              <Text style={{ fontSize: 13, color: '#1A3F7A', fontWeight: '600' }}>
                 ¿Olvidaste tu contraseña?
               </Text>
             </Pressable>
@@ -233,35 +216,41 @@ export default function LoginScreen() {
             {/* Divider */}
             <View
               style={{
+                width: '100%',
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginVertical: 16,
+                marginVertical: 10,
                 gap: 12,
               }}
             >
               <View style={{ flex: 1, height: 1, backgroundColor: '#E2E8F0' }} />
-              <Text style={{ fontSize: 13, color: '#94A3B8' }}>o</Text>
+              <Text style={{ fontSize: 12, color: '#94A3B8' }}>o</Text>
               <View style={{ flex: 1, height: 1, backgroundColor: '#E2E8F0' }} />
             </View>
 
-            <AuthButton
-              label="Continuar con Google"
-              variant="secondary"
-              loading={googleLoading}
-              onPress={handleGoogle}
-            />
+            <View style={{ width: '100%' }}>
+              <AuthButton
+                label="Continuar con Google"
+                variant="secondary"
+                loading={googleLoading}
+                onPress={handleGoogle}
+              />
+            </View>
           </View>
 
           {/* Footer */}
-          <View style={{ alignItems: 'center', marginTop: 24 }}>
-            <Text style={{ fontSize: 14, color: '#64748B' }}>¿No tenés cuenta?</Text>
-            <Pressable onPress={() => router.push('/(auth)/register')} style={{ marginTop: 6 }}>
-              <Text style={{ fontSize: 15, color: '#2B8FD4', fontWeight: '600' }}>
+          <View style={{ alignItems: 'center', paddingTop: 8 }}>
+            <Text style={{ fontSize: 13, color: '#64748B' }}>
+              ¿No tenés cuenta?{' '}
+              <Text
+                onPress={() => router.push('/(auth)/register')}
+                style={{ color: '#2B8FD4', fontWeight: '700' }}
+              >
                 Registrate gratis
               </Text>
-            </Pressable>
+            </Text>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
