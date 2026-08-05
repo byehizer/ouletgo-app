@@ -105,6 +105,7 @@ export function PromotionalBannersCarousel() {
     <View style={styles.container}>
       <ScrollView
         horizontal
+        style={{ height: 160 }}
         showsHorizontalScrollIndicator={false}
         decelerationRate="fast"
         snapToInterval={snapInterval}
@@ -189,6 +190,7 @@ export function PromotionalBannersCarousel() {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 12,
+    minHeight: 185,
   },
   listContent: {
     paddingHorizontal: 16,
