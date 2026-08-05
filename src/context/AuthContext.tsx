@@ -241,10 +241,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             throw new Error(`Error al autenticar con el servidor: ${errBody}`);
           }
 
-          const { token, user: backendUser } = await backendRes.json();
-          await persistSession(token, backendUser);
-          setUser(backendUser);
-          redirectToApp();
+          const { token } = await backendRes.json();
+          await completeOAuthSession(token);
           return;
         }
       }
