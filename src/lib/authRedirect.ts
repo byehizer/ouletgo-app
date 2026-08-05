@@ -18,7 +18,7 @@ export function extractTokenFromAuthUrl(url: string): string | null {
   return null;
 }
 
-/** URL de retorno para expo-web-browser (Expo Go usa exp://, build usa outletgo://). */
+/** URL de retorno para expo-web-browser compatible con Expo Go. */
 export function getOAuthRedirectUrl(): string {
   return Linking.createURL('callback');
 }
