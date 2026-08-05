@@ -189,12 +189,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       Boolean(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY);
 
     if (hasSupabase) {
+      // Forzar cierre de sesión previo en Supabase para evitar que 
+      // sesiones cacheadas viejas de otros roles se queden pegadas.
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        // Ignorar error si no había sesión
+      }
+
       const redirectUrl = getOAuthRedirectUrl();
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
           skipBrowserRedirect: true,
+          queryParams: {
+            prompt: 'select_account',
+          },
         },
       });
 
