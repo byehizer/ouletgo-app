@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -36,7 +37,11 @@ function ConversationCard({
       <View style={[styles.cardInner, hasUnread && styles.cardInnerUnread]}>
         {/* Avatar */}
         <View style={[styles.avatar, hasUnread && styles.avatarUnread]}>
-          <Ionicons name="storefront" size={22} color={Colors.brand.DEFAULT} />
+          {item.storeLogoUrl ? (
+            <Image source={{ uri: item.storeLogoUrl }} style={styles.storeLogo} />
+          ) : (
+            <Ionicons name="storefront" size={22} color={Colors.brand.DEFAULT} />
+          )}
         </View>
 
         {/* Cuerpo */}
@@ -281,6 +286,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: Colors.border.DEFAULT,
+    overflow: 'hidden',
+  },
+  storeLogo: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   avatarUnread: {
     borderColor: Colors.brand.light,

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -70,7 +71,28 @@ export default function ConversationScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: meta?.storeName ?? 'Chat' }} />
+      <Stack.Screen
+        options={{
+          headerTitle: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              {meta?.storeLogoUrl ? (
+                <Image
+                  source={{ uri: meta.storeLogoUrl }}
+                  style={{ width: 34, height: 34, borderRadius: 17, resizeMode: 'cover', borderWidth: 1, borderColor: Colors.border.DEFAULT }}
+                />
+              ) : (
+                <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: Colors.brand.bgLight, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: Colors.border.DEFAULT }}>
+                  <Ionicons name="storefront" size={18} color={Colors.brand.DEFAULT} />
+                </View>
+              )}
+              <Text style={{ fontSize: 17, fontWeight: '600', color: Colors.text.primary }}>
+                {meta?.storeName ?? 'Cargando chat...'}
+              </Text>
+            </View>
+          ),
+          title: '',
+        }}
+      />
       <KeyboardAvoidingView
         style={{ flex: 1, backgroundColor: Colors.surface.base }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
