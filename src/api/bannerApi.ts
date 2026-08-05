@@ -197,8 +197,8 @@ export async function fetchCampaignDetails(id: string): Promise<CampaignDetails>
         id: String(s.id ?? ''),
         name: String(s.name ?? s.businessName ?? 'Tienda'),
         address: s.address ? String(s.address) : 'Avellaneda',
-        ratingAvg: s.ratingAvg != null ? Number(s.ratingAvg) : 4.5,
-        ratingCount: s.ratingCount != null ? Number(s.ratingCount) : 10,
+        ratingAvg: s.ratingAvg != null ? Number(s.ratingAvg) : 0,
+        ratingCount: s.ratingCount != null ? Number(s.ratingCount) : 0,
         imageUrl: s.imageUrl ?? s.headerImage ?? s.logoUrl ?? null,
       }))
     : [];
@@ -211,8 +211,8 @@ export async function fetchCampaignDetails(id: string): Promise<CampaignDetails>
         name: String(p.name ?? 'Producto'),
         price: Number(p.price ?? p.basePrice ?? 0),
         storeName: String(p.storeName ?? defaultStoreName),
-        ratingAvg: p.ratingAvg != null ? Number(p.ratingAvg) : 4.2,
-        ratingCount: p.ratingCount != null ? Number(p.ratingCount) : 5,
+        ratingAvg: p.ratingAvg != null ? Number(p.ratingAvg) : 0,
+        ratingCount: p.ratingCount != null ? Number(p.ratingCount) : 0,
         thumbnailUrl: p.thumbnailUrl ?? p.imageUrl ?? null,
       }))
     : [];

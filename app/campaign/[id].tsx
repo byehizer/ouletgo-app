@@ -112,11 +112,19 @@ export default function CampaignScreen() {
                     {item.address ? item.address.split(',')[0] : 'Avellaneda'}
                   </Text>
                   <View style={styles.ratingRow}>
-                    <Ionicons name="star" size={13} color="#F59E0B" />
+                    <Ionicons
+                      name="star"
+                      size={13}
+                      color={
+                        item.ratingAvg != null && item.ratingAvg > 0 && item.ratingCount != null && item.ratingCount > 0
+                          ? '#F59E0B'
+                          : '#94A3B8'
+                      }
+                    />
                     <Text style={styles.ratingText}>
-                      {item.ratingAvg != null ? item.ratingAvg.toFixed(1) : '4.5'}
+                      {item.ratingAvg != null && item.ratingAvg > 0 ? item.ratingAvg.toFixed(1) : '0.0'}
                     </Text>
-                    <Text style={styles.ratingCountText}>({item.ratingCount ?? 10})</Text>
+                    <Text style={styles.ratingCountText}>({item.ratingCount ?? 0})</Text>
                   </View>
                 </Pressable>
               )}

@@ -59,6 +59,15 @@ let welcomeShownThisSession = false;
 
 // Tarjeta horizontal de tienda para la sección "Mejor Rankeadas" (Social Proof)
 function TopRatedStoreCard({ store, onPress }: { store: TopRatedStore; onPress: () => void }) {
+  const hasRating =
+    store.ratingAvg != null &&
+    store.ratingAvg > 0 &&
+    store.ratingCount != null &&
+    store.ratingCount > 0;
+
+  const ratingText = hasRating ? store.ratingAvg!.toFixed(1) : '0.0';
+  const ratingCountText = `(${store.ratingCount ?? 0})`;
+
   return (
     <Pressable
       onPress={onPress}
@@ -130,12 +139,12 @@ function TopRatedStoreCard({ store, onPress }: { store: TopRatedStore; onPress: 
         {store.address ? store.address.split(',')[0] : 'Avellaneda'}
       </Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8, justifyContent: 'center' }}>
-        <Ionicons name="star" size={13} color="#F59E0B" />
+        <Ionicons name="star" size={13} color={hasRating ? '#F59E0B' : '#94A3B8'} />
         <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>
-          {store.ratingAvg != null ? store.ratingAvg.toFixed(1) : '—'}
+          {ratingText}
         </Text>
         <Text style={{ fontSize: 11, color: '#64748B' }}>
-          ({store.ratingCount})
+          {ratingCountText}
         </Text>
       </View>
     </Pressable>
