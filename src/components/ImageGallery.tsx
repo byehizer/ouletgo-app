@@ -15,7 +15,7 @@ interface ImageGalleryProps {
   height?: number;
 }
 
-export function ImageGallery({ imageUrls, height = 280 }: ImageGalleryProps) {
+export function ImageGallery({ imageUrls, height = 360 }: ImageGalleryProps) {
   const width = Dimensions.get('window').width;
   const [activeIndex, setActiveIndex] = useState(0);
   const listRef = useRef<FlatList<string>>(null);
@@ -28,7 +28,7 @@ export function ImageGallery({ imageUrls, height = 280 }: ImageGalleryProps) {
   };
 
   return (
-    <View style={{ backgroundColor: '#E8F4FD' }}>
+    <View style={{ backgroundColor: '#F8FAFC', paddingTop: 8 }}>
       <FlatList
         ref={listRef}
         data={slides}
@@ -55,7 +55,7 @@ export function ImageGallery({ imageUrls, height = 280 }: ImageGalleryProps) {
             <Image
               source={{ uri: item }}
               style={{ width, height, backgroundColor: '#F1F5F9' }}
-              resizeMode="cover"
+              resizeMode="contain"
             />
           )
         }
