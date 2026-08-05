@@ -31,11 +31,14 @@ function parseUser(raw: unknown): User {
   }
   const o = raw as Record<string, unknown>;
   let role = o['role'];
+  if (typeof role === 'string') {
+    role = role.toUpperCase();
+  }
   if (role === 'CLIENT') {
     role = 'BUYER';
   }
   if (role !== 'BUYER') {
-    throw new Error('Esta app es solo para compradores.');
+    throw new Error(`Esta app es solo para compradores. (Rol detectado: ${String(o['role'])})`);
   }
   const id = o['id'];
   const email = o['email'];

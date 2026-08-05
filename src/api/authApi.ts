@@ -37,8 +37,8 @@ export interface GoogleInitResponse {
 }
 
 export class AuthRoleError extends Error {
-  constructor() {
-    super('Esta app es solo para compradores.');
+  constructor(message: string = 'Esta app es solo para compradores.') {
+    super(message);
     this.name = 'AuthRoleError';
   }
 }
@@ -51,12 +51,17 @@ function parseUser(raw: unknown): User {
   const obj = raw as Record<string, unknown>;
   let role = obj['role'];
 
+  // Hacemos el chequeo robusto
+  if (typeof role === 'string') {
+    role = role.toUpperCase();
+  }
+
   if (role === 'CLIENT') {
     role = 'BUYER';
   }
 
   if (role !== 'BUYER') {
-    throw new AuthRoleError();
+    throw new AuthRoleError(`Esta app es solo para compradores. (Rol detectado: ${String(obj['role'])})`);
   }
 
   const id = obj['id'];
