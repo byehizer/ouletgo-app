@@ -94,3 +94,8 @@ export async function deactivateAccount(): Promise<void> {
   }
   await apiClient.post<void>('/api/buyer/me/deactivate', {});
 }
+
+export async function savePushToken(token: string): Promise<void> {
+  if (USE_MOCKS) return;
+  await apiClient.post('/api/buyer/me/push-token', { token });
+}

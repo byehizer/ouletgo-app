@@ -76,10 +76,6 @@ async function ensureAndroidChannel(): Promise<void> {
 export async function registerForPushNotifications(): Promise<string | null> {
   if (Platform.OS === 'web') return null;
 
-  if (Constants.appOwnership === 'expo') {
-    return null;
-  }
-
   await ensureAndroidChannel();
 
   const { status: existing } = await Notifications.getPermissionsAsync();
