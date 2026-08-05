@@ -186,24 +186,7 @@ export default function MapScreen() {
     );
   }
 
-  if (!hasGoogleMapsKey()) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: '#F5F7FA',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 24,
-        }}
-      >
-        <Ionicons name="key-outline" size={40} color="#94A3B8" />
-        <Text style={{ fontSize: 15, color: '#64748B', textAlign: 'center', marginTop: 12 }}>
-          Configurá EXPO_PUBLIC_GOOGLE_MAPS_API_KEY y rebuildá la app para usar el mapa.
-        </Text>
-      </View>
-    );
-  }
+
 
   return (
     <View style={{ flex: 1, backgroundColor: '#F5F7FA' }}>

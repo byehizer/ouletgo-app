@@ -56,7 +56,7 @@ export function StoreLocationMap({
           ) : (
             <MapPlaceholder message="Configurá EXPO_PUBLIC_GOOGLE_MAPS_API_KEY para ver el mapa." />
           )
-        ) : hasGoogleMapsKey() ? (
+        ) : (
           <MapView
             style={{ width: '100%', height: MAP_HEIGHT }}
             initialRegion={region}
@@ -69,8 +69,6 @@ export function StoreLocationMap({
           >
             <Marker coordinate={{ latitude, longitude }} title={storeName} description={address} />
           </MapView>
-        ) : (
-          <MapPlaceholder message="Agregá EXPO_PUBLIC_GOOGLE_MAPS_API_KEY y rebuildá la app (EAS/dev build)." />
         )}
 
         <Pressable
