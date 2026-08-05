@@ -677,7 +677,7 @@ export default function HomeScreen() {
 
             {!isSearchingOrFiltering ? (
               <>
-                {/* <PromotionalBannersCarousel /> */}
+                <PromotionalBannersCarousel />
 
                 {loadingInitial && products.length === 0 ? (
                   <ActivityIndicator style={{ marginVertical: 12 }} color="#2B8FD4" />

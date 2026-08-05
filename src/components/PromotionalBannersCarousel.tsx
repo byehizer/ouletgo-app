@@ -13,6 +13,20 @@ import {
 
 import { fetchActiveBanners, type PromotionalBanner } from '../api/bannerApi';
 
+import { BrandLogo } from './BrandLogo';
+
+const FALLBACK_BANNERS: PromotionalBanner[] = [
+  {
+    id: 'outletgo-promo-fallback',
+    title: 'OutletGo — Moda & Polos Textiles',
+    description: 'Encontrá ofertas exclusivas de indumentaria y tiendas cerca tuyo',
+    imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop',
+    type: 'CAMPAIGN',
+    startDate: '',
+    endDate: '',
+  },
+];
+
 export function PromotionalBannersCarousel() {
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -36,15 +50,14 @@ export function PromotionalBannersCarousel() {
   }, []);
 
   const handleBannerPress = (banner: PromotionalBanner) => {
+    if (banner.id === 'outletgo-promo-fallback') return;
+
     if (banner.type === 'CAMPAIGN') {
-      // Abre la pantalla de campaña con tiendas y productos asociados
       router.push(`/campaign/${banner.id}` as any);
     } else if (banner.type === 'STORE') {
-      // Redirige directamente al perfil de la tienda promocionada
       const targetId = banner.targetStoreId || banner.id;
       router.push(`/store/${targetId}` as any);
     } else if (banner.type === 'PRODUCT') {
-      // Redirige directamente a la ficha del producto promocionado
       const targetId = banner.targetProductId || banner.id;
       router.push(`/product/${targetId}` as any);
     }
@@ -58,7 +71,7 @@ export function PromotionalBannersCarousel() {
     );
   }
 
-  if (banners.length === 0) return null;
+  const displayBanners = banners.length > 0 ? banners : FALLBACK_BANNERS;
 
   return (
     <View style={styles.container}>
@@ -70,7 +83,7 @@ export function PromotionalBannersCarousel() {
         snapToAlignment="center"
         contentContainerStyle={styles.listContent}
       >
-        {banners.map((item) => (
+        {displayBanners.map((item) => (
           <Pressable
             key={item.id}
             onPress={() => handleBannerPress(item)}
@@ -81,16 +94,21 @@ export function PromotionalBannersCarousel() {
             ]}
           >
             <Image source={{ uri: item.imageUrl }} style={styles.image} resizeMode="cover" />
-            {item.description ? (
-              <View style={styles.textOverlay}>
+            <View style={styles.textOverlay}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                {item.id === 'outletgo-promo-fallback' ? (
+                  <BrandLogo variant="isotype" width={20} height={20} />
+                ) : null}
                 <Text style={styles.title} numberOfLines={1}>
                   {item.title}
                 </Text>
+              </View>
+              {item.description ? (
                 <Text style={styles.description} numberOfLines={1}>
                   {item.description}
                 </Text>
-              </View>
-            ) : null}
+              ) : null}
+            </View>
           </Pressable>
         ))}
       </ScrollView>
