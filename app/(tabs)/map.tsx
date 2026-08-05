@@ -228,7 +228,7 @@ export default function MapScreen() {
       <View
         style={{
           position: 'absolute',
-          top: 12,
+          top: Math.max(insets.top + 8, 16),
           left: 16,
           right: 16,
           gap: 8,

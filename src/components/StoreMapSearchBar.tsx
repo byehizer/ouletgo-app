@@ -196,7 +196,7 @@ export const StoreMapSearchBar = forwardRef<StoreMapSearchBarHandle, StoreMapSea
 
     return (
       <View style={{ position: 'relative', zIndex: 40 }}>
-        <View style={{ opacity: isActive ? 1 : 0.82 }}>
+        <View style={{ opacity: 1 }}>
           <View
             style={{
               flexDirection: 'row',
@@ -204,15 +204,15 @@ export const StoreMapSearchBar = forwardRef<StoreMapSearchBarHandle, StoreMapSea
               backgroundColor: '#FFFFFF',
               borderRadius: 14,
               borderWidth: 1,
-              borderColor: barBorderColor,
+              borderColor: isActive || showDropdown ? '#2B8FD4' : '#E2E8F0',
               paddingLeft: 14,
               paddingRight: rightAccessory ? 6 : 14,
               height: 50,
               shadowColor: '#0F172A',
-              shadowOffset: { width: 0, height: isActive || showDropdown ? 4 : 1 },
-              shadowOpacity: isActive || showDropdown ? 0.1 : 0.04,
-              shadowRadius: isActive || showDropdown ? 10 : 4,
-              elevation: isActive || showDropdown ? 6 : 2,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.08,
+              shadowRadius: 6,
+              elevation: 3,
             }}
           >
             <Ionicons name="search-outline" size={20} color={isActive ? '#2B8FD4' : '#94A3B8'} />
