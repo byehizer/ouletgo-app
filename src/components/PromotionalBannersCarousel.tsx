@@ -15,15 +15,14 @@ import {
 
 import { fetchActiveBanners, type PromotionalBanner } from '../api/bannerApi';
 
-const FALLBACK_BANNERS: (PromotionalBanner & { badge?: string; ctaText?: string })[] = [
+const FALLBACK_BANNERS: PromotionalBanner[] = [
   {
     id: 'shein-fallback-1',
     title: 'OUTLET DE AVELLANEDA',
     description: 'Hasta 50% OFF en indumentaria y colecciones de temporada',
     imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop',
     type: 'CAMPAIGN',
-    badge: 'OFERTAS TOP 🔥',
-    ctaText: 'Ver Colección →',
+    badgeText: 'OFERTAS TOP 🔥',
     startDate: '',
     endDate: '',
   },
@@ -33,8 +32,7 @@ const FALLBACK_BANNERS: (PromotionalBanner & { badge?: string; ctaText?: string 
     description: 'Comprá con los mejores precios mayoristas y minoristas',
     imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=800&auto=format&fit=crop',
     type: 'CAMPAIGN',
-    badge: 'NUEVA TEMPORADA ✨',
-    ctaText: 'Explorar Tiendas →',
+    badgeText: 'NUEVA TEMPORADA ✨',
     startDate: '',
     endDate: '',
   },
@@ -52,14 +50,12 @@ export function PromotionalBannersCarousel() {
   const snapInterval = bannerWidth + 12;
 
   useEffect(() => {
-    console.log('[BANNERS CAROUSEL] Obteniendo banners activos desde backend...');
     void (async () => {
       try {
         const active = await fetchActiveBanners();
-        console.log('[BANNERS CAROUSEL] Banners recibidos del backend:', JSON.stringify(active, null, 2));
         setBanners(active);
       } catch (err) {
-        console.error('[BANNERS CAROUSEL] Error al cargar banners:', err);
+        console.warn('Error al cargar banners:', err);
       } finally {
         setLoading(false);
       }
@@ -75,7 +71,6 @@ export function PromotionalBannersCarousel() {
   };
 
   const handleBannerPress = (banner: PromotionalBanner) => {
-    console.log('[BANNERS CAROUSEL] Banner presionado:', banner.id, banner.type);
     if (banner.id.startsWith('shein-fallback')) return;
 
     if (banner.type === 'CAMPAIGN') {
@@ -113,8 +108,7 @@ export function PromotionalBannersCarousel() {
         contentContainerStyle={styles.listContent}
       >
         {displayBanners.map((item) => {
-          const badgeText = (item as any).badge ?? (item.type === 'CAMPAIGN' ? 'PROMO DÍAS 🔥' : 'DESTACADO ⭐');
-          const ctaText = (item as any).ctaText ?? 'Ver Ofertas →';
+          const badgeText = item.badgeText;
 
           return (
             <Pressable
@@ -135,7 +129,7 @@ export function PromotionalBannersCarousel() {
                   position: 'relative',
                 }}
               >
-                {/* 1. Imagen principal de fondo con dimensiones explícitas numéricas */}
+                {/* 1. Gráfica promocional completa y nítida */}
                 <Image
                   source={{ uri: item.imageUrl }}
                   style={{
@@ -146,46 +140,16 @@ export function PromotionalBannersCarousel() {
                     left: 0,
                   }}
                   resizeMode="cover"
-                  onLoad={() => console.log(`[BANNERS CAROUSEL] Imagen cargada OK para banner ${item.id}`)}
-                  onError={(e) => console.warn(`[BANNERS CAROUSEL] Error cargando imagen para banner ${item.id}:`, e.nativeEvent.error)}
                 />
 
-                {/* 2. Capa oscura para contraste del texto */}
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: bannerWidth,
-                    height: 160,
-                    backgroundColor: 'rgba(15, 23, 42, 0.45)',
-                  }}
-                />
-
-                {/* 3. Badge superior en rojo */}
-                <View style={{ position: 'absolute', top: 12, left: 12, zIndex: 10 }}>
-                  <View style={{ backgroundColor: '#FF3B30', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
-                    <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}>{badgeText}</Text>
-                  </View>
-                </View>
-
-                {/* 4. Título, Descripción y Botón CTA */}
-                <View style={{ position: 'absolute', bottom: 12, left: 14, right: 14, zIndex: 10 }}>
-                  <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFFFFF' }} numberOfLines={1}>
-                    {item.title}
-                  </Text>
-                  {item.description ? (
-                    <Text style={{ fontSize: 12, color: '#E2E8F0', marginTop: 2 }} numberOfLines={1}>
-                      {item.description}
-                    </Text>
-                  ) : null}
-
-                  <View style={{ marginTop: 6, flexDirection: 'row' }}>
-                    <View style={{ backgroundColor: '#FFFFFF', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 }}>
-                      <Text style={{ color: '#0F172A', fontSize: 11, fontWeight: '700' }}>{ctaText}</Text>
+                {/* 2. Badge superior opcional solo si se especificó badgeText en backend/admin */}
+                {badgeText && badgeText.trim().length > 0 ? (
+                  <View style={{ position: 'absolute', top: 12, left: 12, zIndex: 10 }}>
+                    <View style={{ backgroundColor: '#FF3B30', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                      <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}>{badgeText}</Text>
                     </View>
                   </View>
-                </View>
+                ) : null}
               </View>
             </Pressable>
           );
