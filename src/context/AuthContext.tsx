@@ -243,7 +243,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           redirectToApp();
           return;
         }
-      }
       return;
     }
 
