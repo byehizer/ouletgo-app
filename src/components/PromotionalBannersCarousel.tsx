@@ -14,7 +14,6 @@ import {
 } from 'react-native';
 
 import { fetchActiveBanners, type PromotionalBanner } from '../api/bannerApi';
-import { BrandLogo } from './BrandLogo';
 
 const FALLBACK_BANNERS: (PromotionalBanner & { badge?: string; ctaText?: string })[] = [
   {
@@ -49,7 +48,7 @@ export function PromotionalBannersCarousel() {
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const bannerWidth = width - 32;
+  const bannerWidth = width - 32; // 16px de margen a cada lado
   const snapInterval = bannerWidth + 12;
 
   useEffect(() => {
@@ -99,7 +98,6 @@ export function PromotionalBannersCarousel() {
   }
 
   const displayBanners = banners.length > 0 ? banners : FALLBACK_BANNERS;
-  console.log('[BANNERS CAROUSEL] Renderizando cantidad de banners:', displayBanners.length);
 
   return (
     <View style={styles.container}>
@@ -123,44 +121,69 @@ export function PromotionalBannersCarousel() {
               key={item.id}
               onPress={() => handleBannerPress(item)}
               style={({ pressed }) => [
-                styles.card,
-                { width: bannerWidth },
+                { width: bannerWidth, height: 160 },
                 pressed && { opacity: 0.95 },
               ]}
             >
-              {/* Imagen principal de fondo */}
-              <Image
-                source={{ uri: item.imageUrl }}
-                style={styles.image}
-                resizeMode="cover"
-                onLoad={() => console.log(`[BANNERS CAROUSEL] Imagen cargada OK para banner ${item.id}`)}
-                onError={(e) => console.warn(`[BANNERS CAROUSEL] Error cargando imagen para banner ${item.id}:`, e.nativeEvent.error)}
-              />
+              <View
+                style={{
+                  width: bannerWidth,
+                  height: 160,
+                  borderRadius: 14,
+                  overflow: 'hidden',
+                  backgroundColor: '#0F172A',
+                  position: 'relative',
+                }}
+              >
+                {/* 1. Imagen principal de fondo con dimensiones explícitas numéricas */}
+                <Image
+                  source={{ uri: item.imageUrl }}
+                  style={{
+                    width: bannerWidth,
+                    height: 160,
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                  }}
+                  resizeMode="cover"
+                  onLoad={() => console.log(`[BANNERS CAROUSEL] Imagen cargada OK para banner ${item.id}`)}
+                  onError={(e) => console.warn(`[BANNERS CAROUSEL] Error cargando imagen para banner ${item.id}:`, e.nativeEvent.error)}
+                />
 
-              {/* Degradado / Sombra oscura en la parte inferior */}
-              <View style={styles.darkOverlay} />
+                {/* 2. Capa oscura para contraste del texto */}
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: bannerWidth,
+                    height: 160,
+                    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+                  }}
+                />
 
-              {/* Badge superior */}
-              <View style={styles.topBadgeContainer}>
-                <View style={styles.badgePill}>
-                  <Text style={styles.badgeText}>{badgeText}</Text>
+                {/* 3. Badge superior en rojo */}
+                <View style={{ position: 'absolute', top: 12, left: 12, zIndex: 10 }}>
+                  <View style={{ backgroundColor: '#FF3B30', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                    <Text style={{ color: '#FFFFFF', fontSize: 11, fontWeight: '800' }}>{badgeText}</Text>
+                  </View>
                 </View>
-              </View>
 
-              {/* Información y botón CTA en la parte inferior */}
-              <View style={styles.textContent}>
-                <Text style={styles.title} numberOfLines={1}>
-                  {item.title}
-                </Text>
-                {item.description ? (
-                  <Text style={styles.description} numberOfLines={1}>
-                    {item.description}
+                {/* 4. Título, Descripción y Botón CTA */}
+                <View style={{ position: 'absolute', bottom: 12, left: 14, right: 14, zIndex: 10 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFFFFF' }} numberOfLines={1}>
+                    {item.title}
                   </Text>
-                ) : null}
+                  {item.description ? (
+                    <Text style={{ fontSize: 12, color: '#E2E8F0', marginTop: 2 }} numberOfLines={1}>
+                      {item.description}
+                    </Text>
+                  ) : null}
 
-                <View style={styles.ctaRow}>
-                  <View style={styles.ctaButton}>
-                    <Text style={styles.ctaButtonText}>{ctaText}</Text>
+                  <View style={{ marginTop: 6, flexDirection: 'row' }}>
+                    <View style={{ backgroundColor: '#FFFFFF', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 }}>
+                      <Text style={{ color: '#0F172A', fontSize: 11, fontWeight: '700' }}>{ctaText}</Text>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -197,82 +220,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   loadingContainer: {
-    height: 140,
+    height: 160,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  card: {
-    height: 160,
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: '#0F172A',
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  darkOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
-  },
-  topBadgeContainer: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    zIndex: 10,
-  },
-  badgePill: {
-    backgroundColor: '#FF3B30',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  textContent: {
-    position: 'absolute',
-    bottom: 12,
-    left: 14,
-    right: 14,
-    zIndex: 10,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  description: {
-    fontSize: 12,
-    color: '#E2E8F0',
-    marginTop: 2,
-  },
-  ctaRow: {
-    marginTop: 6,
-    flexDirection: 'row',
-  },
-  ctaButton: {
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  ctaButtonText: {
-    color: '#0F172A',
-    fontSize: 11,
-    fontWeight: '700',
   },
   dotsContainer: {
     flexDirection: 'row',
