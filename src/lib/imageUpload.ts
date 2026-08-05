@@ -29,11 +29,11 @@ async function uploadImage(localUri: string, endpoint: string): Promise<UploadIm
 }
 
 export async function uploadChatImage(localUri: string): Promise<UploadImageResult> {
-  return uploadImage(localUri, '/api/buyer/uploads/chat-image');
+  return uploadImage(localUri, '/api/uploads/chat-images');
 }
 
 export async function uploadReviewImage(localUri: string): Promise<UploadImageResult> {
-  return uploadImage(localUri, '/api/buyer/uploads/review-image');
+  return uploadImage(localUri, '/api/uploads/review-images');
 }
 
 /** Sube varias imágenes en paralelo y devuelve las URLs públicas. */
@@ -43,5 +43,5 @@ export async function uploadReviewImages(localUris: string[]): Promise<string[]>
 }
 
 export async function uploadAvatar(localUri: string): Promise<UploadImageResult> {
-  return uploadImage(localUri, '/api/buyer/uploads/avatar');
+  return uploadImage(localUri, '/api/uploads/avatars');
 }
