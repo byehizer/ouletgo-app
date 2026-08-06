@@ -106,9 +106,21 @@ export function MessagesProvider({ children }: { children: ReactNode }) {
     };
 
     scheduleNext();
+
+    const handleBadgeRefresh = () => {
+      void refresh();
+    };
+
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('refresh-messages-badge', handleBadgeRefresh);
+    }
+
     return () => {
       if (pollingRef.current) clearTimeout(pollingRef.current);
       pollingRef.current = null;
+      if (typeof window !== 'undefined' && window.removeEventListener) {
+        window.removeEventListener('refresh-messages-badge', handleBadgeRefresh);
+      }
     };
   }, [authLoading, isAuthenticated, refresh]);
 

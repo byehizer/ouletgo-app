@@ -48,9 +48,15 @@ export function NotificationBootstrap() {
     })();
 
     const removeResponse = addNotificationResponseListener(navigateToDeepLink);
+    const removeReceived = addNotificationReceivedListener(() => {
+      console.log('[MOBILE-PUSH-BOOTSTRAP] 🔔 Notificación recibida en la app. Refrescando contador de mensajes no leídos...');
+      // Cuando llega una notificación, disparamos refresco global del badge
+      void window.dispatchEvent(new Event('refresh-messages-badge'));
+    });
 
     return () => {
       removeResponse();
+      removeReceived();
     };
   }, [isAuthenticated, isLoading]);
 
