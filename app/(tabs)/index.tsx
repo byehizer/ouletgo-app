@@ -274,33 +274,38 @@ function CompactProductCard({
           </Text>
         </View>
 
-        {/* Badge de corazón interactivo — garantizado en capa superior con zIndex 30 */}
+        {/* Botón circular blanco flotante para el corazón favorito */}
         <View
           style={{
             position: 'absolute',
             top: 8,
             right: 8,
-            zIndex: 30,
-            elevation: 6,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: '#FFFFFF',
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#0F172A',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 5,
+            elevation: 7,
+            zIndex: 40,
           }}
         >
           <Pressable
             onPress={handleFavoritePress}
             disabled={toggling}
-            hitSlop={10}
+            hitSlop={8}
             style={({ pressed }) => ({
-              width: 32,
-              height: 32,
-              borderRadius: 16,
+              width: 36,
+              height: 36,
+              borderRadius: 18,
               backgroundColor: '#FFFFFF',
               alignItems: 'center',
               justifyContent: 'center',
               opacity: pressed || toggling ? 0.75 : 1,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.2,
-              shadowRadius: 4,
-              elevation: 6,
             })}
           >
             {toggling ? (
@@ -308,7 +313,7 @@ function CompactProductCard({
             ) : (
               <Ionicons
                 name={isFavorite ? 'heart' : 'heart-outline'}
-                size={18}
+                size={20}
                 color="#E11D48"
               />
             )}
