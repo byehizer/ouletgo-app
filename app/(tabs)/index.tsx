@@ -274,39 +274,46 @@ function CompactProductCard({
           </Text>
         </View>
 
-        {/* Badge de corazón interactivo — visible siempre */}
-        <Pressable
-          onPress={handleFavoritePress}
-          disabled={toggling}
-          hitSlop={8}
-          style={({ pressed }) => ({
+        {/* Badge de corazón interactivo — garantizado en capa superior con zIndex 30 */}
+        <View
+          style={{
             position: 'absolute',
             top: 8,
             right: 8,
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            backgroundColor: 'rgba(255,255,255,0.95)',
-            alignItems: 'center',
-            justifyContent: 'center',
-            opacity: pressed || toggling ? 0.75 : 1,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.15,
-            shadowRadius: 4,
-            elevation: 3,
-          })}
+            zIndex: 30,
+            elevation: 6,
+          }}
         >
-          {toggling ? (
-            <ActivityIndicator size="small" color="#E11D48" />
-          ) : (
-            <Ionicons
-              name={isFavorite ? 'heart' : 'heart-outline'}
-              size={18}
-              color="#E11D48"
-            />
-          )}
-        </Pressable>
+          <Pressable
+            onPress={handleFavoritePress}
+            disabled={toggling}
+            hitSlop={10}
+            style={({ pressed }) => ({
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: '#FFFFFF',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: pressed || toggling ? 0.75 : 1,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.2,
+              shadowRadius: 4,
+              elevation: 6,
+            })}
+          >
+            {toggling ? (
+              <ActivityIndicator size="small" color="#E11D48" />
+            ) : (
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={18}
+                color="#E11D48"
+              />
+            )}
+          </Pressable>
+        </View>
       </View>
 
       {/* Zona inferior: precio + rating prolijo con 1 sola estrella */}
