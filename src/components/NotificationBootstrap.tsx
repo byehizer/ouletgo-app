@@ -31,8 +31,10 @@ export function NotificationBootstrap() {
   const initialHandledRef = useRef(false);
 
   useEffect(() => {
+    console.log('[MOBILE-PUSH-BOOTSTRAP] Estado actual -> isLoading:', isLoading, '| isAuthenticated:', isAuthenticated);
     if (isLoading || !isAuthenticated) {
       if (!isAuthenticated && registeredRef.current) {
+        console.log('[MOBILE-PUSH-BOOTSTRAP] Usuario desautenticado, desregistrando token...');
         void unregisterPushNotifications();
         registeredRef.current = false;
       }
@@ -40,6 +42,7 @@ export function NotificationBootstrap() {
     }
 
     void (async () => {
+      console.log('[MOBILE-PUSH-BOOTSTRAP] Usuario autenticado detectado. Iniciando registro de push token...');
       const token = await registerForPushNotifications();
       if (token) registeredRef.current = true;
     })();

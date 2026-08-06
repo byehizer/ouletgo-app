@@ -74,8 +74,12 @@ async function ensureAndroidChannel(): Promise<void> {
  * Devuelve null si el usuario rechazó permisos o no hay token (simulador, web).
  */
 export async function registerForPushNotifications(): Promise<string | null> {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web') {
+    console.log('[MOBILE-PUSH] Web detectada, omitiendo notificaciones push.');
+    return null;
+  }
 
+  console.log('[MOBILE-PUSH] 1. Configurando canal de Android e inspeccionando permisos...');
   await ensureAndroidChannel();
 
   const { status: existing } = await Notifications.getPermissionsAsync();
@@ -84,10 +88,18 @@ export async function registerForPushNotifications(): Promise<string | null> {
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
-  if (finalStatus !== 'granted') return null;
+
+  console.log('[MOBILE-PUSH] Permisos de notificación del SO:', finalStatus);
+
+  if (finalStatus !== 'granted') {
+    console.warn('[MOBILE-PUSH] ⚠️ Permisos de notificación RECHAZADOS por el usuario.');
+    return null;
+  }
 
   try {
     const projectId = getExpoProjectId();
+    console.log('[MOBILE-PUSH] 2. Pidiendo Expo Push Token con projectId:', projectId ?? 'Ninguno');
+
     const tokenData = projectId
       ? await Notifications.getExpoPushTokenAsync({ projectId })
       : await Notifications.getExpoPushTokenAsync();
@@ -95,11 +107,16 @@ export async function registerForPushNotifications(): Promise<string | null> {
     const token = tokenData.data;
     const platform = Platform.OS as 'ios' | 'android';
 
+    console.log('[MOBILE-PUSH] 🔑 DNI (Expo Push Token) obtenido:', token);
+    console.log('[MOBILE-PUSH] 3. Enviando token al backend (/api/buyer/notifications/register)...');
+
     await registerPushTokenOnBackend({ token, platform });
     await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
+
+    console.log('[MOBILE-PUSH] ✅ TOKEN REGISTRADO EXITOSAMENTE EN EL BACKEND.');
     return token;
-  } catch {
-    // Expo Go / simulador sin credenciales de push
+  } catch (err) {
+    console.error('[MOBILE-PUSH] ❌ ERROR capturado obteniendo/registrando token push:', err);
     if (__DEV__) return null;
     throw new Error('No se pudo activar las notificaciones push.');
   }
