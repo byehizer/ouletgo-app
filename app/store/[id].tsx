@@ -101,6 +101,7 @@ export default function StoreScreen() {
                   address: store.address,
                   ratingAvg: store.ratingAvg,
                   ratingCount: store.ratingCount,
+                  imageUrl: store.imageUrl ?? store.headerImage ?? null,
                 }}
               />
               <ReportIconButton

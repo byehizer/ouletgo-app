@@ -164,6 +164,7 @@ export async function mockAddFavoriteStore(storeId: string, meta: FavoriteStoreM
       address: meta.address,
       ratingAvg: meta.ratingAvg,
       ratingCount: meta.ratingCount,
+      imageUrl: meta.imageUrl,
       addedAt: new Date().toISOString(),
     },
   ];
