@@ -1,16 +1,45 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, Text, View } from 'react-native';
 
 import type { CatalogProduct } from '../api/catalogApi';
+import { useFavorite } from '../hooks/useFavorite';
 import { formatARS } from '../lib/format';
 import { formatDistanceKm } from '../lib/location';
 
 interface ProductCardProps {
   product: CatalogProduct;
   onPress?: (product: CatalogProduct) => void;
+  isAuthenticated?: boolean;
 }
 
-export function ProductCard({ product, onPress }: ProductCardProps) {
+export function ProductCard({ product, onPress, isAuthenticated = false }: ProductCardProps) {
+  const { isFavorite, toggling, toggle } = useFavorite(
+    'product',
+    product.id,
+    isAuthenticated
+      ? {
+          productName: product.name,
+          thumbnailUrl: product.thumbnailUrl,
+          price: product.price,
+          storeId: product.storeId,
+          storeName: product.storeName,
+        }
+      : undefined,
+  );
+
+  const handleFavoritePress = async (e: any) => {
+    e?.stopPropagation?.();
+    if (!isAuthenticated) return;
+    try {
+      await toggle();
+    } catch (err) {
+      Alert.alert(
+        'Favoritos',
+        err instanceof Error ? err.message : 'No se pudo actualizar el favorito.',
+      );
+    }
+  };
+
   const hasRating =
     product.ratingAvg != null &&
     product.ratingAvg > 0 &&
@@ -51,6 +80,41 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
         ) : (
           <Ionicons name="shirt-outline" size={40} color="#2B8FD4" />
         )}
+
+        {isAuthenticated ? (
+          <Pressable
+            onPress={handleFavoritePress}
+            disabled={toggling}
+            hitSlop={8}
+            style={({ pressed }) => ({
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: 'rgba(255,255,255,0.95)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              opacity: pressed || toggling ? 0.75 : 1,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 4,
+              elevation: 3,
+            })}
+          >
+            {toggling ? (
+              <ActivityIndicator size="small" color="#E11D48" />
+            ) : (
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={18}
+                color="#E11D48"
+              />
+            )}
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={{ padding: 12 }}>

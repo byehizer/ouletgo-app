@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   BackHandler,
   FlatList,
   RefreshControl,
@@ -18,6 +19,7 @@ import {
 
 import { Colors } from '../../src/theme/colors';
 import { useAuth } from '../../src/context/AuthContext';
+import { useFavorite } from '../../src/hooks/useFavorite';
 import { fetchTopRatedStores, type TopRatedStore } from '../../src/api/storeApi';
 import {
   fetchFavoriteProducts,
@@ -160,6 +162,33 @@ function CompactProductCard({
   onPress: () => void;
   isAuthenticated?: boolean;
 }) {
+  const { isFavorite, toggling, toggle } = useFavorite(
+    'product',
+    product.id,
+    isAuthenticated
+      ? {
+          productName: product.name,
+          thumbnailUrl: product.thumbnailUrl,
+          price: product.price,
+          storeId: product.storeId,
+          storeName: product.storeName,
+        }
+      : undefined,
+  );
+
+  const handleFavoritePress = async (e: any) => {
+    e?.stopPropagation?.();
+    if (!isAuthenticated) return;
+    try {
+      await toggle();
+    } catch (err) {
+      Alert.alert(
+        'Favoritos',
+        err instanceof Error ? err.message : 'No se pudo actualizar el favorito.',
+      );
+    }
+  };
+
   const hasRating =
     product.ratingAvg != null &&
     product.ratingAvg > 0 &&
@@ -237,23 +266,40 @@ function CompactProductCard({
           </Text>
         </View>
 
-        {/* Badge de corazón — solo si está logueado */}
+        {/* Badge de corazón interactivo — solo si está logueado */}
         {isAuthenticated ? (
-          <View
-            style={{
+          <Pressable
+            onPress={handleFavoritePress}
+            disabled={toggling}
+            hitSlop={8}
+            style={({ pressed }) => ({
               position: 'absolute',
               top: 8,
               right: 8,
-              width: 30,
-              height: 30,
-              borderRadius: 15,
-              backgroundColor: 'rgba(255,255,255,0.9)',
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: 'rgba(255,255,255,0.95)',
               alignItems: 'center',
               justifyContent: 'center',
-            }}
+              opacity: pressed || toggling ? 0.75 : 1,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 4,
+              elevation: 3,
+            })}
           >
-            <Ionicons name="heart-outline" size={16} color="#E11D48" />
-          </View>
+            {toggling ? (
+              <ActivityIndicator size="small" color="#E11D48" />
+            ) : (
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={18}
+                color="#E11D48"
+              />
+            )}
+          </Pressable>
         ) : null}
       </View>
 
