@@ -472,6 +472,7 @@ export default function HomeScreen() {
     async (pageNum: number, replace: boolean) => {
       if (loadingRef.current) return;
       loadingRef.current = true;
+      if (replace) setProducts([]);
 
       try {
         const result = await fetchCatalogProducts(buildQuery(pageNum));
