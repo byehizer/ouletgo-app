@@ -27,6 +27,7 @@ export function usePushNotifications() {
 
     async function registerForPushNotifications() {
       try {
+        console.log('[MOBILE-PUSH] 1. Solicitando permisos de notificación al SO...');
         const { status: existingStatus } = await Notifications.getPermissionsAsync();
         let finalStatus = existingStatus;
 
@@ -35,8 +36,10 @@ export function usePushNotifications() {
           finalStatus = status;
         }
 
+        console.log('[MOBILE-PUSH] Permisos de notificación:', finalStatus);
+
         if (finalStatus !== 'granted') {
-          console.log('Permisos de notificaciones rechazados.');
+          console.warn('[MOBILE-PUSH] ⚠️ Permisos de notificaciones RECHAZADOS por el usuario.');
           return;
         }
 
@@ -49,14 +52,19 @@ export function usePushNotifications() {
           });
         }
 
+        console.log('[MOBILE-PUSH] 2. Solicitando Expo Push Token (DNI de este celular)...');
         const tokenData = await Notifications.getExpoPushTokenAsync();
         const token = tokenData.data;
 
+        console.log('[MOBILE-PUSH] 🔑 DNI (Expo Push Token) obtenido:', token);
+
         if (isMounted && token) {
+          console.log('[MOBILE-PUSH] 3. Guardando DNI en el Servidor Backend (/api/buyer/me/push-token)...');
           await savePushToken(token);
+          console.log('[MOBILE-PUSH] ✅ DNI guardado con éxito en el backend para el usuario actual.');
         }
       } catch (error) {
-        console.log('Error registrando notificaciones push:', error);
+        console.error('[MOBILE-PUSH] ❌ Error durante el registro de notificaciones push:', error);
       }
     }
 
