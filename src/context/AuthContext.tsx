@@ -78,10 +78,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const handleSessionExpired = useCallback(async () => {
     await unregisterPushNotifications();
+    const existingToken = await getToken();
+    const wasAuthenticated = !!existingToken || user !== null;
     await clearSession();
     setUser(null);
-    redirectToLogin();
-  }, [redirectToLogin]);
+    if (wasAuthenticated) {
+      redirectToLogin();
+    }
+  }, [redirectToLogin, user]);
 
   useEffect(() => {
     return onUnauthorized(() => {
