@@ -361,7 +361,6 @@ function CompactFavoriteStoreCard({ store, onPress }: { store: FavoriteStore; on
       style={({ pressed }) => ({
         width: 120,
         alignItems: 'center',
-        marginRight: 14,
         opacity: pressed ? 0.88 : 1,
       })}
     >
