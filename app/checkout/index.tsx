@@ -52,6 +52,7 @@ import { cartFingerprint, clearIdempotencyKey, getOrCreateIdempotencyKey } from 
 import { formatARS } from '../../src/lib/format';
 import { Colors } from '../../src/theme/colors';
 import { useAuth } from '../../src/context/AuthContext';
+import { useLogistics } from '../../src/context/LogisticsContext';
 import { LoadingScreen } from '../../src/components/LoadingScreen';
 
 // ---------------------------------------------------------------------------
@@ -339,6 +340,7 @@ function ResultScreen({
 
 export default function CheckoutScreen() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { preference, addresses: savedAddresses } = useLogistics();
 
   useFocusEffect(
     useCallback(() => {
@@ -361,11 +363,14 @@ export default function CheckoutScreen() {
   const [resultOrderId, setResultOrderId] = useState<string | null>(null);
 
   // -- Delivery form --
-  const [deliveryMethod, setDeliveryMethod] = useState<ShippingMethod>('RETIRO_EN_PUNTO');
+  const [deliveryMethod, setDeliveryMethod] = useState<ShippingMethod>(() => {
+    return preference?.type === 'DELIVERY' ? 'ENVIO_CORREO' : 'RETIRO_EN_PUNTO';
+  });
   const [pickupPoints, setPickupPoints] = useState<OutletGoPickupPoint[]>([]);
   const [loadingPoints, setLoadingPoints] = useState(false);
   const [selectedPickupId, setSelectedPickupId] = useState<string | null>(null);
 
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [address, setAddress] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [quotes, setQuotes] = useState<ShippingQuote[]>([]);
@@ -379,6 +384,31 @@ export default function CheckoutScreen() {
 
   const isSubmitting = useRef(false);
 
+  // Sync preference or saved addresses into checkout state
+  useEffect(() => {
+    if (preference) {
+      if (preference.type === 'PICKUP' && preference.referenceId) {
+        setSelectedPickupId(preference.referenceId);
+      } else if (preference.type === 'DELIVERY' && preference.referenceId) {
+        const found = savedAddresses.find((a) => a.id === preference.referenceId);
+        if (found) {
+          setSelectedAddressId(found.id);
+          const fullAddr = `${found.street} ${found.number}${found.apartment ? `, Depto ${found.apartment}` : ''}, ${found.city}`;
+          setAddress(fullAddr);
+          setPostalCode(found.postalCode);
+        }
+      }
+    } else if (savedAddresses.length > 0 && !selectedAddressId) {
+      const def = savedAddresses.find((a) => a.isDefault) ?? savedAddresses[0];
+      if (def) {
+        setSelectedAddressId(def.id);
+        const fullAddr = `${def.street} ${def.number}${def.apartment ? `, Depto ${def.apartment}` : ''}, ${def.city}`;
+        setAddress(fullAddr);
+        setPostalCode(def.postalCode);
+      }
+    }
+  }, [preference, savedAddresses]);
+
   // Load pickup points when method is RETIRO_EN_PUNTO
   useEffect(() => {
     if (deliveryMethod !== 'RETIRO_EN_PUNTO') return;
@@ -387,13 +417,19 @@ export default function CheckoutScreen() {
     getPickupPoints()
       .then((pts) => {
         setPickupPoints(pts);
-        if (pts[0]) setSelectedPickupId(pts[0].id);
+        // Pre-select preference point if set, else first point
+        const prefPointId = preference?.type === 'PICKUP' ? preference.referenceId : null;
+        if (prefPointId && pts.some((p) => p.id === prefPointId)) {
+          setSelectedPickupId(prefPointId);
+        } else if (pts[0]) {
+          setSelectedPickupId(pts[0].id);
+        }
       })
       .catch(() => {
         Alert.alert('Error', 'No se pudieron cargar los puntos de retiro.');
       })
       .finally(() => setLoadingPoints(false));
-  }, [deliveryMethod, pickupPoints.length]);
+  }, [deliveryMethod, pickupPoints.length, preference]);
 
   const handleFetchQuotes = useCallback(async (cpOverride?: string) => {
     const cp = (cpOverride ?? postalCode).trim();
@@ -407,6 +443,9 @@ export default function CheckoutScreen() {
       setQuotes(result);
       setQuotesFetched(true);
       lastQuotedPostalCode.current = cp;
+      if (result.length > 0 && !selectedCarrier) {
+        setSelectedCarrier(result[0].carrier);
+      }
     } catch {
       setQuotes([]);
       setQuotesFetched(false);
@@ -415,7 +454,7 @@ export default function CheckoutScreen() {
     } finally {
       setLoadingQuotes(false);
     }
-  }, [postalCode]);
+  }, [postalCode, selectedCarrier]);
 
   // Auto-cotizar al completar el CP (4+ dígitos)
   useEffect(() => {
@@ -482,7 +521,7 @@ export default function CheckoutScreen() {
     if (!address.trim()) return 'Ingresá la dirección de entrega';
     if (postalCode.trim().length < 4) return 'Ingresá el código postal';
     if (loadingQuotes) return 'Cotizando envío…';
-    if (!selectedCarrier) return 'Elegí Correo Argentino o Andreani';
+    if (!selectedCarrier) return 'Elegí un servicio de envío';
     return 'Completá los datos de entrega';
   })();
 
@@ -728,7 +767,7 @@ export default function CheckoutScreen() {
               onPress={() => setDeliveryMethod('ENVIO_CORREO')}
               icon="cube-outline"
               title="Envío a domicilio"
-              subtitle="Correo Argentino o Andreani"
+              subtitle="Envío a domicilio con Reparto Propio"
             />
           </View>
 
@@ -763,13 +802,84 @@ export default function CheckoutScreen() {
             <View style={{ marginTop: 16 }}>
               <SectionTitle>Datos de entrega</SectionTitle>
 
+              {/* Direcciones guardadas */}
+              {savedAddresses.length > 0 ? (
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.text.secondary, marginBottom: 8 }}>
+                    Seleccionar de tus direcciones guardadas
+                  </Text>
+                  <View style={{ gap: 8, marginBottom: 10 }}>
+                    {savedAddresses.map((addr) => {
+                      const isSelected = selectedAddressId === addr.id;
+                      return (
+                        <Pressable
+                          key={addr.id}
+                          onPress={() => {
+                            setSelectedAddressId(addr.id);
+                            const fullAddr = `${addr.street} ${addr.number}${addr.apartment ? `, Depto ${addr.apartment}` : ''}, ${addr.city}`;
+                            setAddress(fullAddr);
+                            setPostalCode(addr.postalCode);
+                            void handleFetchQuotes(addr.postalCode);
+                          }}
+                          style={({ pressed }) => [
+                            styles.optionCard,
+                            isSelected && styles.optionCardSelected,
+                            pressed && styles.optionCardPressed,
+                          ]}
+                        >
+                          <View style={[styles.optionIconBox, styles.optionIconBoxSm, isSelected && styles.optionIconBoxSelected]}>
+                            <Ionicons name="home" size={18} color={isSelected ? '#fff' : Colors.text.secondary} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.optionTitle}>{addr.name}</Text>
+                            <Text style={styles.optionSubtitle}>
+                              {addr.street} {addr.number}
+                              {addr.apartment ? `, Depto ${addr.apartment}` : ''} · {addr.city} (CP {addr.postalCode})
+                            </Text>
+                          </View>
+                          {isSelected && <Ionicons name="checkmark-circle" size={20} color={Colors.brand.DEFAULT} />}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+
+                  <Pressable
+                    onPress={() => {
+                      setSelectedAddressId(null);
+                      setAddress('');
+                      setPostalCode('');
+                      setQuotes([]);
+                      setQuotesFetched(false);
+                      setSelectedCarrier(null);
+                    }}
+                    style={({ pressed }) => [
+                      {
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 6,
+                        paddingVertical: 6,
+                      },
+                      pressed && { opacity: 0.7 },
+                    ]}
+                  >
+                    <Ionicons name="add-circle-outline" size={18} color={Colors.brand.DEFAULT} />
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.brand.DEFAULT }}>
+                      Ingresar otra dirección manualmente
+                    </Text>
+                  </Pressable>
+                </View>
+              ) : null}
+
               {/* Dirección */}
               <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.text.secondary, marginBottom: 6 }}>
-                Dirección
+                Dirección de entrega
               </Text>
               <TextInput
                 value={address}
-                onChangeText={setAddress}
+                onChangeText={(t) => {
+                  setAddress(t);
+                  setSelectedAddressId(null);
+                }}
                 placeholder="Ej: Av. Corrientes 1234, CABA"
                 placeholderTextColor={Colors.text.muted}
                 style={{
@@ -795,6 +905,7 @@ export default function CheckoutScreen() {
                   value={postalCode}
                   onChangeText={(t) => {
                     setPostalCode(t);
+                    setSelectedAddressId(null);
                     setQuotesFetched(false);
                     setSelectedCarrier(null);
                     lastQuotedPostalCode.current = null;
@@ -874,7 +985,7 @@ export default function CheckoutScreen() {
 
               {postalCode.trim().length >= 4 && !loadingQuotes && quotesFetched && !selectedCarrier ? (
                 <Text style={styles.shippingHintSelect}>
-                  Elegí Correo Argentino o Andreani para continuar.
+                  Elegí un servicio de envío para continuar.
                 </Text>
               ) : null}
             </View>
