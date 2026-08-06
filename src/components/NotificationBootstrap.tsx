@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 
 import { useAuth } from '../context/AuthContext';
 import {
+  addNotificationReceivedListener,
   addNotificationResponseListener,
   getInitialNotificationDeepLink,
   registerForPushNotifications,
