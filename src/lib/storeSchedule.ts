@@ -37,28 +37,21 @@ function parseTimeToMinutes(time: string): number | null {
   return hours * 60 + minutes;
 }
 
-/** Hora y día de la semana en Argentina (para schedule y badge "hoy"). */
+/** Hora y día de la semana en Argentina (UTC-3 constante, para schedule y badge). */
 export function getStoreLocalParts(at: Date = new Date()): {
   dayOfWeek: number;
   minutesOfDay: number;
 } {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: STORE_TIMEZONE,
-    weekday: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  }).formatToParts(at);
-
-  const weekday = parts.find((p) => p.type === 'weekday')?.value ?? 'Mon';
-  let hour = Number(parts.find((p) => p.type === 'hour')?.value ?? 0);
-  const minute = Number(parts.find((p) => p.type === 'minute')?.value ?? 0);
-
-  if (hour === 24) hour = 0;
+  // Argentina es UTC-3 todo el año (sin horario de verano)
+  const argMs = at.getTime() - 3 * 60 * 60 * 1000;
+  const argDate = new Date(argMs);
+  const utcDay = argDate.getUTCDay(); // 0 = Domingo, 1 = Lunes ... 6 = Sábado
+  const dayOfWeek = utcDay === 0 ? 7 : utcDay; // 1 = Lunes ... 7 = Domingo
+  const minutesOfDay = argDate.getUTCHours() * 60 + argDate.getUTCMinutes();
 
   return {
-    dayOfWeek: WEEKDAY_TO_JAVA[weekday] ?? 1,
-    minutesOfDay: hour * 60 + minute,
+    dayOfWeek,
+    minutesOfDay,
   };
 }
 

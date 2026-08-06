@@ -104,7 +104,9 @@ export default function MapScreen() {
       setStores(data);
       setSelectedStore((prev) => {
         if (!prev) return null;
-        return data.find((s) => s.id === prev.id) ?? prev;
+        const match = data.find((s) => s.id === prev.id);
+        if (match) return match;
+        return openNowOnly ? null : prev;
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudieron cargar las tiendas.');

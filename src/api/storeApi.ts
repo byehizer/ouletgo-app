@@ -135,38 +135,70 @@ export async function fetchStoreProducts(
   return normalizePage<CatalogProduct>(raw);
 }
 
+import { isStoreOpenNow } from '../lib/storeSchedule';
+
 export async function fetchNearbyStores(query: NearbyStoresQuery): Promise<NearbyStore[]> {
+  let stores: NearbyStore[] = [];
   if (USE_MOCKS) {
-    return mockFetchNearbyStores(query);
+    stores = await mockFetchNearbyStores(query);
+  } else {
+    const sp = new URLSearchParams();
+    sp.set('latitude', String(query.latitude));
+    sp.set('longitude', String(query.longitude));
+    if (query.radiusKm != null) sp.set('radiusKm', String(query.radiusKm));
+    if (query.openNow) sp.set('openNow', 'true');
+
+    const raw = await apiClient.get<unknown>(`${STORE_PATH}/nearby?${sp.toString()}`, {
+      skipAuth: true,
+    });
+    stores = Array.isArray(raw) ? (raw as NearbyStore[]) : [];
   }
 
-  const sp = new URLSearchParams();
-  sp.set('latitude', String(query.latitude));
-  sp.set('longitude', String(query.longitude));
-  if (query.radiusKm != null) sp.set('radiusKm', String(query.radiusKm));
-  if (query.openNow) sp.set('openNow', 'true');
-
-  const raw = await apiClient.get<unknown>(`${STORE_PATH}/nearby?${sp.toString()}`, {
-    skipAuth: true,
+  // Recalcular isOpenNow usando el schedule retornado o cliente
+  const processed = stores.map((s) => {
+    const isOpen = s.schedule && s.schedule.length > 0
+      ? isStoreOpenNow(s.schedule)
+      : s.isOpenNow;
+    return {
+      ...s,
+      isOpenNow: isOpen,
+    };
   });
-  return Array.isArray(raw) ? (raw as NearbyStore[]) : [];
+
+  // Si se solicita el filtro "Solo abiertas ahora", garantizar el filtrado cliente estricto
+  if (query.openNow) {
+    return processed.filter((s) => s.isOpenNow === true);
+  }
+
+  return processed;
 }
 
 export async function searchStoresByName(query: StoreSearchQuery): Promise<NearbyStore[]> {
+  let stores: NearbyStore[] = [];
   if (USE_MOCKS) {
-    return mockSearchStoresByName(query);
+    stores = await mockSearchStoresByName(query);
+  } else {
+    const sp = new URLSearchParams();
+    sp.set('name', query.name.trim());
+    if (query.latitude != null) sp.set('latitude', String(query.latitude));
+    if (query.longitude != null) sp.set('longitude', String(query.longitude));
+    if (query.limit != null) sp.set('limit', String(query.limit));
+
+    const raw = await apiClient.get<unknown>(`${STORE_PATH}/search?${sp.toString()}`, {
+      skipAuth: true,
+    });
+    stores = Array.isArray(raw) ? (raw as NearbyStore[]) : [];
   }
 
-  const sp = new URLSearchParams();
-  sp.set('name', query.name.trim());
-  if (query.latitude != null) sp.set('latitude', String(query.latitude));
-  if (query.longitude != null) sp.set('longitude', String(query.longitude));
-  if (query.limit != null) sp.set('limit', String(query.limit));
-
-  const raw = await apiClient.get<unknown>(`${STORE_PATH}/search?${sp.toString()}`, {
-    skipAuth: true,
+  return stores.map((s) => {
+    const isOpen = s.schedule && s.schedule.length > 0
+      ? isStoreOpenNow(s.schedule)
+      : s.isOpenNow;
+    return {
+      ...s,
+      isOpenNow: isOpen,
+    };
   });
-  return Array.isArray(raw) ? (raw as NearbyStore[]) : [];
 }
 
 export interface TopRatedStore {

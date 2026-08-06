@@ -183,6 +183,7 @@ function toNearbyStore(store: MockStoreSeed, origin: Coordinates): NearbyStore {
       longitude: store.longitude,
     }),
     isOpenNow: isStoreOpenNow(schedule),
+    schedule,
   };
 }
 
