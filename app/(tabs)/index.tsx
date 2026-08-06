@@ -359,46 +359,40 @@ function CompactFavoriteStoreCard({ store, onPress }: { store: FavoriteStore; on
     <Pressable
       onPress={onPress}
       style={({ pressed }) => ({
-        width: 140,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E2E8F0',
-        padding: 12,
-        marginRight: 10,
+        width: 120,
         alignItems: 'center',
-        opacity: pressed ? 0.9 : 1,
+        marginRight: 14,
+        opacity: pressed ? 0.88 : 1,
       })}
     >
-      {store.imageUrl ? (
-        <Image
-          source={{ uri: store.imageUrl }}
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 25,
-            marginBottom: 8,
-            borderWidth: 1,
-            borderColor: '#E2E8F0',
-          }}
-        />
-      ) : (
-        <View
-          style={{
-            width: 50,
-            height: 50,
-            borderRadius: 25,
-            backgroundColor: '#FFF1F2',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 8,
-            borderWidth: 1,
-            borderColor: '#FDA4AF',
-          }}
-        >
-          <Ionicons name="storefront-outline" size={24} color="#E11D48" />
-        </View>
-      )}
+      <View
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: 32,
+          backgroundColor: '#FFF1F2',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: 8,
+          borderWidth: 2,
+          borderColor: '#E11D48',
+          overflow: 'hidden',
+        }}
+      >
+        {store.imageUrl ? (
+          <Image
+            source={{ uri: store.imageUrl }}
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+            }}
+            resizeMode="cover"
+          />
+        ) : (
+          <Ionicons name="storefront-outline" size={28} color="#E11D48" />
+        )}
+      </View>
       <Text
         numberOfLines={1}
         style={{ fontSize: 13, fontWeight: '700', color: '#0F172A', textAlign: 'center', width: '100%' }}
@@ -407,10 +401,21 @@ function CompactFavoriteStoreCard({ store, onPress }: { store: FavoriteStore; on
       </Text>
       <Text
         numberOfLines={1}
-        style={{ fontSize: 10, color: '#64748B', marginTop: 2, textAlign: 'center', width: '100%' }}
+        style={{ fontSize: 11, color: '#64748B', marginTop: 2, textAlign: 'center', width: '100%' }}
       >
         {store.address ? store.address.split(',')[0] : 'Avellaneda'}
       </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, justifyContent: 'center' }}>
+        <Ionicons
+          name="star"
+          size={12}
+          color={store.ratingAvg != null && store.ratingAvg > 0 ? '#F59E0B' : '#94A3B8'}
+        />
+        <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>
+          {store.ratingAvg != null && store.ratingAvg > 0 ? store.ratingAvg.toFixed(1) : '0.0'}
+        </Text>
+        <Text style={{ fontSize: 11, color: '#64748B' }}>({store.ratingCount ?? 0})</Text>
+      </View>
     </Pressable>
   );
 }
