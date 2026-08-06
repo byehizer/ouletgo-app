@@ -359,9 +359,9 @@ function CompactFavoriteStoreCard({ store, onPress }: { store: FavoriteStore; on
     <Pressable
       onPress={onPress}
       style={({ pressed }) => ({
-        width: 120,
+        width: 140,
         alignItems: 'center',
-        opacity: pressed ? 0.88 : 1,
+        opacity: pressed ? 0.9 : 1,
       })}
     >
       <View
@@ -372,6 +372,7 @@ function CompactFavoriteStoreCard({ store, onPress }: { store: FavoriteStore; on
           backgroundColor: '#FFF1F2',
           alignItems: 'center',
           justifyContent: 'center',
+          alignSelf: 'center',
           marginBottom: 8,
           borderWidth: 2,
           borderColor: '#E11D48',
@@ -394,20 +395,20 @@ function CompactFavoriteStoreCard({ store, onPress }: { store: FavoriteStore; on
       </View>
       <Text
         numberOfLines={1}
-        style={{ fontSize: 13, fontWeight: '700', color: '#0F172A', textAlign: 'center', width: '100%' }}
+        style={{ fontSize: 13, fontWeight: '700', color: '#0F172A', textAlign: 'center', alignSelf: 'stretch' }}
       >
         {store.storeName}
       </Text>
       <Text
         numberOfLines={1}
-        style={{ fontSize: 11, color: '#64748B', marginTop: 2, textAlign: 'center', width: '100%' }}
+        style={{ fontSize: 11, color: '#64748B', marginTop: 2, textAlign: 'center', alignSelf: 'stretch' }}
       >
         {store.address ? store.address.split(',')[0] : 'Avellaneda'}
       </Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4, justifyContent: 'center' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6, justifyContent: 'center' }}>
         <Ionicons
           name="star"
-          size={12}
+          size={13}
           color={store.ratingAvg != null && store.ratingAvg > 0 ? '#F59E0B' : '#94A3B8'}
         />
         <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>
