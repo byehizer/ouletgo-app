@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   BackHandler,
   FlatList,
   RefreshControl,
@@ -18,6 +19,7 @@ import {
 
 import { Colors } from '../../src/theme/colors';
 import { useAuth } from '../../src/context/AuthContext';
+import { useFavorite } from '../../src/hooks/useFavorite';
 import { fetchTopRatedStores, type TopRatedStore } from '../../src/api/storeApi';
 import {
   fetchFavoriteProducts,
@@ -59,6 +61,15 @@ let welcomeShownThisSession = false;
 
 // Tarjeta horizontal de tienda para la sección "Mejor Rankeadas" (Social Proof)
 function TopRatedStoreCard({ store, onPress }: { store: TopRatedStore; onPress: () => void }) {
+  const hasRating =
+    store.ratingAvg != null &&
+    store.ratingAvg > 0 &&
+    store.ratingCount != null &&
+    store.ratingCount > 0;
+
+  const ratingText = hasRating ? store.ratingAvg!.toFixed(1) : '0.0';
+  const ratingCountText = `(${store.ratingCount ?? 0})`;
+
   return (
     <Pressable
       onPress={onPress}
@@ -130,19 +141,18 @@ function TopRatedStoreCard({ store, onPress }: { store: TopRatedStore; onPress: 
         {store.address ? store.address.split(',')[0] : 'Avellaneda'}
       </Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8, justifyContent: 'center' }}>
-        <Ionicons name="star" size={13} color="#F59E0B" />
+        <Ionicons name="star" size={13} color={hasRating ? '#F59E0B' : '#94A3B8'} />
         <Text style={{ fontSize: 12, fontWeight: '700', color: '#0F172A' }}>
-          {store.ratingAvg != null ? store.ratingAvg.toFixed(1) : '—'}
+          {ratingText}
         </Text>
         <Text style={{ fontSize: 11, color: '#64748B' }}>
-          ({store.ratingCount})
+          {ratingCountText}
         </Text>
       </View>
     </Pressable>
   );
 }
 
-// Tarjeta horizontal compacta de producto para "Recién Llegados" y "Favoritos"
 function CompactProductCard({
   product,
   onPress,
@@ -152,23 +162,49 @@ function CompactProductCard({
   onPress: () => void;
   isAuthenticated?: boolean;
 }) {
-  const hasRating = product.ratingAvg != null && product.ratingAvg > 0;
+  const { isFavorite, toggling, toggle } = useFavorite(
+    'product',
+    product.id,
+    {
+      productName: product.name,
+      thumbnailUrl: product.thumbnailUrl,
+      price: product.price,
+      storeId: product.storeId,
+      storeName: product.storeName,
+    },
+  );
 
-  const renderStars = (avg: number) => {
-    const stars = [];
-    const full = Math.floor(avg);
-    for (let i = 0; i < 5; i++) {
-      stars.push(
-        <Ionicons
-          key={i}
-          name={i < full ? 'star' : 'star-outline'}
-          size={10}
-          color="#F59E0B"
-        />
+  const handleFavoritePress = async (e: any) => {
+    e?.stopPropagation?.();
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Iniciar sesión',
+        'Debes iniciar sesión para guardar productos en tus favoritos.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Iniciar sesión', onPress: () => router.push('/(auth)/login') },
+        ],
+      );
+      return;
+    }
+    try {
+      await toggle();
+    } catch (err) {
+      Alert.alert(
+        'Favoritos',
+        err instanceof Error ? err.message : 'No se pudo actualizar el favorito.',
       );
     }
-    return stars;
   };
+
+  const hasRating =
+    product.ratingAvg != null &&
+    product.ratingAvg > 0 &&
+    product.ratingCount != null &&
+    product.ratingCount > 0;
+
+  const ratingText = hasRating ? product.ratingAvg!.toFixed(1) : '0.0';
+  const ratingCountText = `(${product.ratingCount ?? 0})`;
 
   return (
     <Pressable
@@ -238,27 +274,54 @@ function CompactProductCard({
           </Text>
         </View>
 
-        {/* Badge de corazón — solo si está logueado */}
-        {isAuthenticated ? (
-          <View
-            style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              width: 30,
-              height: 30,
-              borderRadius: 15,
-              backgroundColor: 'rgba(255,255,255,0.9)',
+        {/* Botón circular blanco flotante para el corazón favorito */}
+        <View
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: '#FFFFFF',
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#0F172A',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 5,
+            elevation: 7,
+            zIndex: 40,
+          }}
+        >
+          <Pressable
+            onPress={handleFavoritePress}
+            disabled={toggling}
+            hitSlop={8}
+            style={({ pressed }) => ({
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              backgroundColor: '#FFFFFF',
               alignItems: 'center',
               justifyContent: 'center',
-            }}
+              opacity: pressed || toggling ? 0.75 : 1,
+            })}
           >
-            <Ionicons name="heart-outline" size={16} color="#E11D48" />
-          </View>
-        ) : null}
+            {toggling ? (
+              <ActivityIndicator size="small" color="#E11D48" />
+            ) : (
+              <Ionicons
+                name={isFavorite ? 'heart' : 'heart-outline'}
+                size={20}
+                color="#E11D48"
+              />
+            )}
+          </Pressable>
+        </View>
       </View>
 
-      {/* Zona inferior: precio + rating */}
+      {/* Zona inferior: precio + rating prolijo con 1 sola estrella */}
       <View
         style={{
           paddingHorizontal: 10,
@@ -267,27 +330,24 @@ function CompactProductCard({
           alignItems: 'center',
           justifyContent: 'space-between',
           backgroundColor: '#FFFFFF',
+          gap: 4,
         }}
       >
-        <Text style={{ fontSize: 16, fontWeight: '900', color: '#1A3F7A', letterSpacing: -0.3 }}>
+        <Text
+          numberOfLines={1}
+          style={{ fontSize: 13, fontWeight: '900', color: '#1A3F7A', letterSpacing: -0.3, flex: 1 }}
+        >
           {formatARS(product.price)}
         </Text>
-        {hasRating ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-            {renderStars(product.ratingAvg!)}
-          </View>
-        ) : (
-          <View
-            style={{
-              backgroundColor: '#F0F9FF',
-              borderRadius: 6,
-              paddingHorizontal: 6,
-              paddingVertical: 2,
-            }}
-          >
-            <Text style={{ fontSize: 9, color: '#2B8FD4', fontWeight: '700' }}>NUEVO</Text>
-          </View>
-        )}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+          <Ionicons name="star" size={12} color={hasRating ? '#F59E0B' : '#94A3B8'} />
+          <Text style={{ fontSize: 11, fontWeight: '700', color: '#0F172A' }}>
+            {ratingText}
+          </Text>
+          <Text style={{ fontSize: 10, color: '#64748B' }}>
+            {ratingCountText}
+          </Text>
+        </View>
       </View>
     </Pressable>
   );
@@ -412,6 +472,7 @@ export default function HomeScreen() {
     async (pageNum: number, replace: boolean) => {
       if (loadingRef.current) return;
       loadingRef.current = true;
+      if (replace) setProducts([]);
 
       try {
         const result = await fetchCatalogProducts(buildQuery(pageNum));

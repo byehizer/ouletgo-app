@@ -91,25 +91,40 @@ export default function CampaignScreen() {
               data={campaign.stores}
               keyExtractor={(item) => item.id}
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 16 }}
+              contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 8 }}
+              ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
               renderItem={({ item }) => (
                 <Pressable
                   onPress={() => handleStorePress(item.id)}
-                  style={({ pressed }) => [styles.storeCard, pressed && { opacity: 0.9 }]}
+                  style={({ pressed }) => [styles.storeCard, pressed && { opacity: 0.92 }]}
                 >
                   <View style={styles.storeLogoContainer}>
                     {item.imageUrl ? (
                       <Image source={{ uri: item.imageUrl }} style={styles.storeLogo} resizeMode="cover" />
                     ) : (
-                      <Ionicons name="storefront-outline" size={24} color="#2B8FD4" />
+                      <Ionicons name="storefront-outline" size={28} color="#2B8FD4" />
                     )}
                   </View>
                   <Text numberOfLines={1} style={styles.storeName}>
-                    {item.name}
+                    {item.name || (item as any).businessName}
+                  </Text>
+                  <Text numberOfLines={1} style={styles.storeAddress}>
+                    {item.address ? item.address.split(',')[0] : 'Avellaneda'}
                   </Text>
                   <View style={styles.ratingRow}>
-                    <Ionicons name="star" size={10} color="#F59E0B" />
-                    <Text style={styles.ratingText}>{item.ratingAvg != null ? item.ratingAvg.toFixed(1) : '—'}</Text>
+                    <Ionicons
+                      name="star"
+                      size={13}
+                      color={
+                        item.ratingAvg != null && item.ratingAvg > 0 && item.ratingCount != null && item.ratingCount > 0
+                          ? '#F59E0B'
+                          : '#94A3B8'
+                      }
+                    />
+                    <Text style={styles.ratingText}>
+                      {item.ratingAvg != null && item.ratingAvg > 0 ? item.ratingAvg.toFixed(1) : '0.0'}
+                    </Text>
+                    <Text style={styles.ratingCountText}>({item.ratingCount ?? 0})</Text>
                   </View>
                 </Pressable>
               )}
@@ -265,48 +280,68 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   storeCard: {
-    width: 130,
+    width: 145,
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    padding: 12,
-    marginRight: 10,
-    alignItems: 'center',
-  },
-  storeLogoContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#F1F5F9',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  storeLogoContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#E8F4FD',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 10,
+    borderWidth: 2,
+    borderColor: '#2B8FD4',
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   storeLogo: {
-    width: '100%',
-    height: '100%',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
   },
   storeName: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
     color: '#0F172A',
     textAlign: 'center',
-    width: '100%',
+    alignSelf: 'stretch',
+  },
+  storeAddress: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+    textAlign: 'center',
+    alignSelf: 'stretch',
   },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    marginTop: 4,
+    gap: 4,
+    marginTop: 8,
+    justifyContent: 'center',
   },
   ratingText: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
     color: '#0F172A',
+  },
+  ratingCountText: {
+    fontSize: 11,
+    color: '#64748B',
   },
   emptyContainer: {
     padding: 32,

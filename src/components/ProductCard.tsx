@@ -11,10 +11,14 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onPress }: ProductCardProps) {
-  const rating =
-    product.ratingAvg != null
-      ? `${product.ratingAvg.toFixed(1)} (${product.ratingCount})`
-      : 'Sin reseñas';
+  const hasRating =
+    product.ratingAvg != null &&
+    product.ratingAvg > 0 &&
+    product.ratingCount != null &&
+    product.ratingCount > 0;
+
+  const ratingText = hasRating ? product.ratingAvg!.toFixed(1) : '0.0';
+  const ratingCount = product.ratingCount ?? 0;
 
   return (
     <Pressable
@@ -75,8 +79,10 @@ export function ProductCard({ product, onPress }: ProductCardProps) {
             {formatARS(product.price)}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <Ionicons name="star" size={12} color="#F59E0B" />
-            <Text style={{ fontSize: 11, color: '#64748B' }}>{rating}</Text>
+            <Ionicons name="star" size={12} color={hasRating ? '#F59E0B' : '#94A3B8'} />
+            <Text style={{ fontSize: 11, color: '#64748B' }}>
+              {ratingText} ({ratingCount})
+            </Text>
           </View>
         </View>
       </View>

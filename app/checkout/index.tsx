@@ -571,13 +571,18 @@ export default function CheckoutScreen() {
         if (parsed.orderId) finalOrderId = parsed.orderId;
       } else {
         const returnScheme = 'outletgo://';
-        const result = await WebBrowser.openAuthSessionAsync(mpInitPoint, returnScheme);
+        let result: WebBrowser.WebBrowserResult;
+        try {
+          result = await WebBrowser.openAuthSessionAsync(mpInitPoint, returnScheme);
+        } catch {
+          result = await WebBrowser.openBrowserAsync(mpInitPoint);
+        }
 
-        if (result.type === 'success' && result.url) {
+        if (result.type === 'success' && 'url' in result && result.url) {
           const parsed = parseMpReturnUrl(result.url);
           mpStatus = parsed.status;
           if (parsed.orderId) finalOrderId = parsed.orderId;
-        } else if (result.type === 'cancel') {
+        } else {
           mpStatus = 'pending';
         }
       }

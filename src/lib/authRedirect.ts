@@ -20,5 +20,6 @@ export function extractTokenFromAuthUrl(url: string): string | null {
 
 /** URL de retorno para expo-web-browser compatible con Expo Go. */
 export function getOAuthRedirectUrl(): string {
+  // En Expo Go devuelve exp://<IP>:8081/--/callback, que coincide con exp://* en Supabase
   return Linking.createURL('callback');
 }

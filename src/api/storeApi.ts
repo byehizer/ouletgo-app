@@ -184,5 +184,17 @@ export async function fetchTopRatedStores(limit = 10): Promise<TopRatedStore[]> 
   const raw = await apiClient.get<unknown>(`${STORE_PATH}/top-rated?limit=${limit}`, {
     skipAuth: true,
   });
-  return Array.isArray(raw) ? (raw as TopRatedStore[]) : [];
+  if (!Array.isArray(raw)) return [];
+  return raw.map((item: any) => {
+    const ratingAvg = item.ratingAvg ?? item.rating_avg;
+    const ratingCount = item.ratingCount ?? item.rating_count;
+    return {
+      id: String(item.id ?? ''),
+      name: String(item.name ?? ''),
+      ratingAvg: typeof ratingAvg === 'number' ? ratingAvg : null,
+      ratingCount: typeof ratingCount === 'number' ? ratingCount : 0,
+      imageUrl: item.imageUrl ?? item.image_url ?? null,
+      address: item.address ?? undefined,
+    };
+  });
 }

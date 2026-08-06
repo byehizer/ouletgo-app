@@ -1,5 +1,6 @@
 import { apiClient, normalizePage } from './client';
 import { mockFetchCatalogProducts, mockFetchCategories, mockFetchNewArrivals } from './mock/catalogMock';
+import { parseCatalogProducts } from './productApi';
 import { USE_MOCKS } from '../config/env';
 
 import type { Page } from './types';
@@ -71,7 +72,11 @@ export async function fetchCatalogProducts(
   const raw = await apiClient.get<unknown>(`${PRODUCTS_PATH}?${sp.toString()}`, {
     skipAuth: true,
   });
-  return normalizePage<CatalogProduct>(raw);
+  const pageObj = normalizePage<unknown>(raw);
+  return {
+    ...pageObj,
+    content: parseCatalogProducts(pageObj.content),
+  };
 }
 
 export async function fetchNewArrivals(limit = 10): Promise<CatalogProduct[]> {
@@ -81,5 +86,5 @@ export async function fetchNewArrivals(limit = 10): Promise<CatalogProduct[]> {
   const raw = await apiClient.get<unknown>(`${PRODUCTS_PATH}/new-arrivals?limit=${limit}`, {
     skipAuth: true,
   });
-  return Array.isArray(raw) ? (raw as CatalogProduct[]) : [];
+  return parseCatalogProducts(raw);
 }

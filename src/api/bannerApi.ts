@@ -189,5 +189,40 @@ export async function fetchCampaignDetails(id: string): Promise<CampaignDetails>
     }
     return details;
   }
-  return apiClient.get<CampaignDetails>(`/api/banners/${id}/details`);
+
+  const data = await apiClient.get<any>(`/api/banners/${id}/details`);
+  
+  const stores = Array.isArray(data.stores)
+    ? data.stores.map((s: any) => ({
+        id: String(s.id ?? ''),
+        name: String(s.name ?? s.businessName ?? 'Tienda'),
+        address: s.address ? String(s.address) : 'Avellaneda',
+        ratingAvg: s.ratingAvg != null ? Number(s.ratingAvg) : 0,
+        ratingCount: s.ratingCount != null ? Number(s.ratingCount) : 0,
+        imageUrl: s.imageUrl ?? s.headerImage ?? s.logoUrl ?? null,
+      }))
+    : [];
+
+  const defaultStoreName = stores.length > 0 ? stores[0].name : '';
+
+  const products = Array.isArray(data.products)
+    ? data.products.map((p: any) => ({
+        id: String(p.id ?? ''),
+        name: String(p.name ?? 'Producto'),
+        price: Number(p.price ?? p.basePrice ?? 0),
+        storeName: String(p.storeName ?? defaultStoreName),
+        ratingAvg: p.ratingAvg != null ? Number(p.ratingAvg) : 0,
+        ratingCount: p.ratingCount != null ? Number(p.ratingCount) : 0,
+        thumbnailUrl: p.thumbnailUrl ?? p.imageUrl ?? null,
+      }))
+    : [];
+
+  return {
+    id: String(data.id ?? id),
+    title: String(data.title ?? 'Campaña'),
+    description: data.description ? String(data.description) : null,
+    imageUrl: String(data.imageUrl ?? ''),
+    stores,
+    products,
+  };
 }

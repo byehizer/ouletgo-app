@@ -68,6 +68,9 @@ function buildMockProducts(): MockProductInternal[] {
         ? ['37', '38', '39', '40', '41', '42'].filter((_, si) => (idx + si) % 2 === 0)
         : SIZE_POOL.filter((_, si) => (idx + si) % 2 === 0);
 
+      const ratingAvg = idx % 5 === 0 ? null : Number((3.8 + ((idx * 7) % 13) / 10).toFixed(1));
+      const ratingCount = ratingAvg != null ? (idx * 17) % 230 + 12 : 0;
+
       items.push({
         id: `mock-prod-${idx}`,
         name: `${name} ${i + 1}`,
@@ -75,8 +78,8 @@ function buildMockProducts(): MockProductInternal[] {
         price: 8500 + idx * 1250,
         storeName: STORE_NAMES[idx % STORE_NAMES.length] ?? 'Tienda',
         storeId,
-        ratingAvg: idx % 3 === 0 ? null : 3.5 + (idx % 15) / 10,
-        ratingCount: idx * 3,
+        ratingAvg,
+        ratingCount,
         categoryId: category.id,
         sizes,
       });
