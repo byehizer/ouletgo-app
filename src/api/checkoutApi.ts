@@ -116,9 +116,8 @@ export interface MpReturnParams {
 // ---------------------------------------------------------------------------
 
 function mockCalculateServiceFee(productSubtotal: number): number {
-  // Mock: 5% sobre el subtotal de productos, mínimo $500
-  const fee = productSubtotal * 0.05;
-  return Math.max(fee, 500);
+  // 2% sobre el subtotal de productos según reglas del Admin
+  return Math.round(productSubtotal * 0.02 * 100) / 100;
 }
 
 async function mockGetCheckoutSummary(req: CheckoutSummaryRequest): Promise<CheckoutSummary> {
@@ -130,7 +129,7 @@ async function mockGetCheckoutSummary(req: CheckoutSummaryRequest): Promise<Chec
     shippingCost: req.quotedShippingCost,
     serviceFee,
     total,
-    serviceFeeLabel: 'Tarifa de servicio OutletGo (5%)',
+    serviceFeeLabel: 'Tarifa de servicio OutletGo (2%)',
   };
 }
 

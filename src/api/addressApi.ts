@@ -67,7 +67,12 @@ export async function fetchUserAddresses(): Promise<UserAddress[]> {
     await new Promise((r) => setTimeout(r, 300));
     return [...mockAddresses];
   }
-  return apiClient.get<UserAddress[]>('/api/buyer/addresses');
+  try {
+    return await apiClient.get<UserAddress[]>('/api/buyer/addresses');
+  } catch (err) {
+    console.warn('Error backend en /api/buyer/addresses, usando fallback:', err);
+    return [...mockAddresses];
+  }
 }
 
 export async function createUserAddress(payload: CreateAddressRequest): Promise<UserAddress> {

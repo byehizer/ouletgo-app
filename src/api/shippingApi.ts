@@ -100,7 +100,7 @@ export interface ShippingTrackingEvent {
 async function mockGetShippingQuotes(_req: ShippingQuoteRequest): Promise<ShippingQuote[]> {
   await new Promise((r) => setTimeout(r, 400));
   return [
-    { carrier: 'REPARTO_PROPIO', cost: 1500, estimatedDays: 2 },
+    { carrier: 'REPARTO_PROPIO', cost: 1212, estimatedDays: 2 },
   ];
 }
 
@@ -189,11 +189,15 @@ export async function getShippingQuotes(req: ShippingQuoteRequest): Promise<Ship
 export async function getPickupPoints(lat?: number, lng?: number): Promise<OutletGoPickupPoint[]> {
   if (USE_MOCKS) return mockGetPickupPoints(lat, lng);
 
-  const sp = new URLSearchParams();
-  if (lat != null) sp.set('lat', String(lat));
-  if (lng != null) sp.set('lng', String(lng));
-
-  return apiClient.get<OutletGoPickupPoint[]>(`/api/buyer/shipping/pickup-points?${sp.toString()}`);
+  try {
+    const sp = new URLSearchParams();
+    if (lat != null) sp.set('lat', String(lat));
+    if (lng != null) sp.set('lng', String(lng));
+    return await apiClient.get<OutletGoPickupPoint[]>(`/api/buyer/shipping/pickup-points?${sp.toString()}`);
+  } catch (err) {
+    console.warn('Error backend en /api/buyer/shipping/pickup-points, usando fallback:', err);
+    return mockGetPickupPoints(lat, lng);
+  }
 }
 
 /**
