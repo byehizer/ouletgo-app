@@ -443,7 +443,7 @@ export default function CheckoutScreen() {
       setQuotes(result);
       setQuotesFetched(true);
       lastQuotedPostalCode.current = cp;
-      if (result.length > 0) {
+      if (result.length > 0 && result[0]) {
         setSelectedCarrier(result[0].carrier);
       }
     } catch {

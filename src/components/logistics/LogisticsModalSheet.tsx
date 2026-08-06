@@ -3,9 +3,9 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
-  KeyboardAvoidingView,
   Modal,
   Pressable,
+  TouchableOpacity,
   ScrollView,
   Text,
   TextInput,
@@ -152,199 +152,196 @@ export function LogisticsModalSheet({ visible, onClose }: LogisticsModalSheetPro
               <ActivityIndicator size="large" color="#2B8FD4" />
             </View>
           ) : (
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={{ flex: 1 }}
+            <ScrollView
+              style={{ maxHeight: 550 }}
+              contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40 }}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled={true}
+              showsVerticalScrollIndicator={true}
             >
-              <ScrollView
-                style={styles.scroll}
-                contentContainerStyle={{ paddingBottom: currentView === 'ADD_ADDRESS' ? 100 : 32 }}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={true}
-              >
-                {currentView === 'SELECT' && (
-                  <View style={{ paddingBottom: 16 }}>
-                    {/* PUNTOS DE RETIRO */}
-                    <Text style={styles.sectionTitle}>Puntos de retiro OutletGo (Palermo / Villa Crespo)</Text>
-                    {pickupPoints.map((point) => {
-                      const isSelected = preference?.type === 'PICKUP' && preference?.referenceId === point.id;
-                      return (
-                        <Pressable
-                          key={point.id}
-                          onPress={() => handleSelectPickup(point.id, point.name, point.address)}
-                          style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-                        >
-                          <View style={styles.optionInfo}>
-                            <Ionicons name="pin" size={20} color={isSelected ? '#2B8FD4' : '#64748B'} />
-                            <View style={{ marginLeft: 12, flex: 1 }}>
-                              <Text style={styles.optionName}>{point.name}</Text>
-                              <Text style={styles.optionSub}>{point.address} · {point.businessHours}</Text>
-                            </View>
+              {currentView === 'SELECT' && (
+                <View style={{ paddingBottom: 16 }}>
+                  {/* PUNTOS DE RETIRO */}
+                  <Text style={styles.sectionTitle}>Puntos de retiro OutletGo (Palermo / Villa Crespo)</Text>
+                  {pickupPoints.map((point) => {
+                    const isSelected = preference?.type === 'PICKUP' && preference?.referenceId === point.id;
+                    return (
+                      <Pressable
+                        key={point.id}
+                        onPress={() => handleSelectPickup(point.id, point.name, point.address)}
+                        style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                      >
+                        <View style={styles.optionInfo}>
+                          <Ionicons name="pin" size={20} color={isSelected ? '#2B8FD4' : '#64748B'} />
+                          <View style={{ marginLeft: 12, flex: 1 }}>
+                            <Text style={styles.optionName}>{point.name}</Text>
+                            <Text style={styles.optionSub}>{point.address} · {point.businessHours}</Text>
                           </View>
-                          {isSelected && <Ionicons name="checkmark-circle" size={20} color="#2B8FD4" />}
-                        </Pressable>
-                      );
-                    })}
-
-                    {/* DIRECCIONES DE ENVIO */}
-                    <View style={{ marginTop: 20 }}>
-                      <Text style={styles.sectionTitle}>Enviar a Domicilio</Text>
-                      {isAuthenticated ? (
-                        addresses.length === 0 ? (
-                          <Text style={styles.emptyText}>No tenés direcciones guardadas aún.</Text>
-                        ) : (
-                          addresses.map((addr) => {
-                            const isSelected = preference?.type === 'DELIVERY' && preference?.referenceId === addr.id;
-                            return (
-                              <Pressable
-                                key={addr.id}
-                                onPress={() => handleSelectDelivery(addr.id, addr.street, addr.number)}
-                                style={[styles.optionCard, isSelected && styles.optionCardSelected]}
-                              >
-                                <View style={styles.optionInfo}>
-                                  <Ionicons name="home" size={20} color={isSelected ? '#2B8FD4' : '#64748B'} />
-                                  <View style={{ marginLeft: 12, flex: 1 }}>
-                                    <Text style={styles.optionName}>{addr.name}</Text>
-                                    <Text style={styles.optionSub}>
-                                      {addr.street} {addr.number}
-                                      {addr.apartment ? `, Depto ${addr.apartment}` : ''} · {addr.city}
-                                    </Text>
-                                  </View>
-                                </View>
-                                {isSelected && <Ionicons name="checkmark-circle" size={20} color="#2B8FD4" />}
-                              </Pressable>
-                            );
-                          })
-                        )
-                      ) : (
-                        <View style={styles.guestWarningCard}>
-                          <Ionicons name="lock-closed" size={20} color="#94A3B8" />
-                          <Text style={styles.guestWarningText}>
-                            Iniciá sesión para utilizar tus direcciones de envío.
-                          </Text>
                         </View>
-                      )}
-                    </View>
+                        {isSelected && <Ionicons name="checkmark-circle" size={20} color="#2B8FD4" />}
+                      </Pressable>
+                    );
+                  })}
 
-                    {/* BOTON NUEVA DIRECCION */}
-                    <Pressable onPress={handleAddAddressPress} style={styles.addAddressButton}>
-                      <Ionicons name="add-circle-outline" size={20} color="#2B8FD4" />
-                      <Text style={styles.addAddressText}>Agregar nueva dirección</Text>
-                    </Pressable>
-                  </View>
-                )}
-
-                {currentView === 'ADD_ADDRESS' && (
-                  <View style={{ paddingHorizontal: 4 }}>
-                    {formError && (
-                      <View style={styles.formErrorContainer}>
-                        <Text style={styles.formErrorText}>{formError}</Text>
+                  {/* DIRECCIONES DE ENVIO */}
+                  <View style={{ marginTop: 20 }}>
+                    <Text style={styles.sectionTitle}>Enviar a Domicilio</Text>
+                    {isAuthenticated ? (
+                      addresses.length === 0 ? (
+                        <Text style={styles.emptyText}>No tenés direcciones guardadas aún.</Text>
+                      ) : (
+                        addresses.map((addr) => {
+                          const isSelected = preference?.type === 'DELIVERY' && preference?.referenceId === addr.id;
+                          return (
+                            <Pressable
+                              key={addr.id}
+                              onPress={() => handleSelectDelivery(addr.id, addr.street, addr.number)}
+                              style={[styles.optionCard, isSelected && styles.optionCardSelected]}
+                            >
+                              <View style={styles.optionInfo}>
+                                <Ionicons name="home" size={20} color={isSelected ? '#2B8FD4' : '#64748B'} />
+                                <View style={{ marginLeft: 12, flex: 1 }}>
+                                  <Text style={styles.optionName}>{addr.name}</Text>
+                                  <Text style={styles.optionSub}>
+                                    {addr.street} {addr.number}
+                                    {addr.apartment ? `, Depto ${addr.apartment}` : ''} · {addr.city}
+                                  </Text>
+                                </View>
+                              </View>
+                              {isSelected && <Ionicons name="checkmark-circle" size={20} color="#2B8FD4" />}
+                            </Pressable>
+                          );
+                        })
+                      )
+                    ) : (
+                      <View style={styles.guestWarningCard}>
+                        <Ionicons name="lock-closed" size={20} color="#94A3B8" />
+                        <Text style={styles.guestWarningText}>
+                          Iniciá sesión para utilizar tus direcciones de envío.
+                        </Text>
                       </View>
                     )}
-
-                    <Text style={styles.fieldLabel}>Nombre de la dirección *</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Ej: Casa, Trabajo, Novio/a"
-                      placeholderTextColor="#94A3B8"
-                      value={addrName}
-                      onChangeText={setAddrName}
-                    />
-
-                    <View style={{ flexDirection: 'row', gap: 12 }}>
-                      <View style={{ flex: 2 }}>
-                        <Text style={styles.fieldLabel}>Calle *</Text>
-                        <TextInput
-                          style={styles.input}
-                          placeholder="Ej: Av. Corrientes"
-                          placeholderTextColor="#94A3B8"
-                          value={addrStreet}
-                          onChangeText={setAddrStreet}
-                        />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.fieldLabel}>Número *</Text>
-                        <TextInput
-                          style={styles.input}
-                          placeholder="Ej: 1234"
-                          placeholderTextColor="#94A3B8"
-                          value={addrNumber}
-                          onChangeText={setAddrNumber}
-                          keyboardType="numeric"
-                        />
-                      </View>
-                    </View>
-
-                    <View style={{ flexDirection: 'row', gap: 12 }}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.fieldLabel}>Piso / Depto</Text>
-                        <TextInput
-                          style={styles.input}
-                          placeholder="Ej: 3B"
-                          placeholderTextColor="#94A3B8"
-                          value={addrApartment}
-                          onChangeText={setAddrApartment}
-                        />
-                      </View>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.fieldLabel}>Cód. Postal *</Text>
-                        <TextInput
-                          style={styles.input}
-                          placeholder="Ej: 1043"
-                          placeholderTextColor="#94A3B8"
-                          value={addrPostalCode}
-                          onChangeText={setAddrPostalCode}
-                        />
-                      </View>
-                    </View>
-
-                    <Text style={styles.fieldLabel}>Ciudad *</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Ej: CABA"
-                      placeholderTextColor="#94A3B8"
-                      value={addrCity}
-                      onChangeText={setAddrCity}
-                    />
                   </View>
-                )}
 
-                {currentView === 'LOGIN_PROMPT' && (
-                  <View style={styles.loginPromptContainer}>
-                    <Ionicons name="heart" size={48} color="#E11D48" style={{ marginBottom: 12 }} />
-                    <Text style={styles.loginTitle}>Iniciá sesión para continuar</Text>
-                    <Text style={styles.loginDesc}>
-                      Para agregar direcciones de envío personalizadas y guardarlas en tu cuenta, es necesario que ingreses a tu perfil.
-                    </Text>
-                    <Pressable
-                      onPress={() => {
-                        onClose();
-                        router.push('/(auth)/login?redirect=/(tabs)/');
-                      }}
-                      style={({ pressed }) => [styles.loginBtn, pressed && { opacity: 0.9 }]}
-                    >
-                      <Text style={styles.loginBtnText}>Iniciar sesión</Text>
-                    </Pressable>
-                  </View>
-                )}
-              </ScrollView>
+                  {/* BOTON NUEVA DIRECCION */}
+                  <Pressable onPress={handleAddAddressPress} style={styles.addAddressButton}>
+                    <Ionicons name="add-circle-outline" size={20} color="#2B8FD4" />
+                    <Text style={styles.addAddressText}>Agregar nueva dirección</Text>
+                  </Pressable>
+                </View>
+              )}
 
               {currentView === 'ADD_ADDRESS' && (
-                <View style={styles.footerContainer}>
-                  <Pressable
+                <View style={{ paddingHorizontal: 4, paddingBottom: 16 }}>
+                  {formError && (
+                    <View style={styles.formErrorContainer}>
+                      <Text style={styles.formErrorText}>{formError}</Text>
+                    </View>
+                  )}
+
+                  <Text style={styles.fieldLabel}>Nombre de la dirección *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ej: Casa, Trabajo, Novio/a"
+                    placeholderTextColor="#94A3B8"
+                    value={addrName}
+                    onChangeText={setAddrName}
+                  />
+
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <View style={{ flex: 2 }}>
+                      <Text style={styles.fieldLabel}>Calle *</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ej: Av. Corrientes"
+                        placeholderTextColor="#94A3B8"
+                        value={addrStreet}
+                        onChangeText={setAddrStreet}
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.fieldLabel}>Número *</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ej: 1234"
+                        placeholderTextColor="#94A3B8"
+                        value={addrNumber}
+                        onChangeText={setAddrNumber}
+                        keyboardType="numeric"
+                      />
+                    </View>
+                  </View>
+
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.fieldLabel}>Piso / Depto</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ej: 3B"
+                        placeholderTextColor="#94A3B8"
+                        value={addrApartment}
+                        onChangeText={setAddrApartment}
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.fieldLabel}>Cód. Postal *</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ej: 1043"
+                        placeholderTextColor="#94A3B8"
+                        value={addrPostalCode}
+                        onChangeText={setAddrPostalCode}
+                      />
+                    </View>
+                  </View>
+
+                  <Text style={styles.fieldLabel}>Ciudad *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ej: CABA"
+                    placeholderTextColor="#94A3B8"
+                    value={addrCity}
+                    onChangeText={setAddrCity}
+                  />
+
+                  {/* BOTÓN UNICO DE GUARDAR DIRECCIÓN CON TOUCHABLE OPACITY */}
+                  <TouchableOpacity
                     onPress={handleSaveAddress}
                     disabled={saving}
-                    style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.9 }]}
+                    activeOpacity={0.8}
+                    style={styles.saveBtn}
                   >
                     {saving ? (
                       <ActivityIndicator size="small" color="#FFFFFF" />
                     ) : (
-                      <Text style={styles.saveBtnText}>Guardar y seleccionar dirección</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
+                        <Text style={styles.saveBtnText}>Guardar y seleccionar dirección</Text>
+                      </View>
                     )}
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {currentView === 'LOGIN_PROMPT' && (
+                <View style={styles.loginPromptContainer}>
+                  <Ionicons name="heart" size={48} color="#E11D48" style={{ marginBottom: 12 }} />
+                  <Text style={styles.loginTitle}>Iniciá sesión para continuar</Text>
+                  <Text style={styles.loginDesc}>
+                    Para agregar direcciones de envío personalizadas y guardarlas en tu cuenta, es necesario que ingreses a tu perfil.
+                  </Text>
+                  <Pressable
+                    onPress={() => {
+                      onClose();
+                      router.push('/(auth)/login?redirect=/(tabs)/');
+                    }}
+                    style={({ pressed }) => [styles.loginBtn, pressed && { opacity: 0.9 }]}
+                  >
+                    <Text style={styles.loginBtnText}>Iniciar sesión</Text>
                   </Pressable>
                 </View>
               )}
-            </KeyboardAvoidingView>
+            </ScrollView>
           )}
         </View>
       </View>
@@ -365,7 +362,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    height: '80%',
     maxHeight: '85%',
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: -8 },
@@ -491,11 +487,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#475569',
-    marginBottom: 6,
-    marginTop: 12,
+    marginBottom: 4,
+    marginTop: 8,
   },
   input: {
-    height: 48,
+    height: 44,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
     borderRadius: 8,
@@ -513,15 +509,19 @@ const styles = StyleSheet.create({
     borderTopColor: '#F1F5F9',
   },
   saveBtn: {
-    height: 48,
-    backgroundColor: '#2B8FD4',
-    borderRadius: 8,
+    height: 50,
+    backgroundColor: '#0284C7',
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+    width: '100%',
+    elevation: 3,
   },
   saveBtnText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
   },
   formErrorContainer: {

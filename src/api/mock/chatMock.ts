@@ -114,10 +114,13 @@ export async function mockFetchConversations(
   const user = await getMockProfileUser();
   const userEmail = user?.email ?? '';
 
-  // Filtramos por el email del usuario logueado actualmente
-  const userConvs = conversations.filter(
+  // Filtramos por el email del usuario logueado actualmente; si no hay coincidencia, mostramos las demo
+  let userConvs = conversations.filter(
     (c) => c.userEmail.toLowerCase() === userEmail.toLowerCase(),
   );
+  if (userConvs.length === 0 && conversations.length > 0) {
+    userConvs = conversations;
+  }
 
   const sorted = [...userConvs].sort(
     (a, b) =>

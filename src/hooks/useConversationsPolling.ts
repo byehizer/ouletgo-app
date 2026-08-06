@@ -10,8 +10,8 @@ import { useCallback, useEffect, useRef } from 'react';
 
 import { fetchConversations, type ConversationListItem } from '../api/chatApi';
 
-/** Intervalo del polling de la lista (menos agresivo que el de la sala). */
-export const CONV_POLL_INTERVAL_MS = 15_000;
+/** Intervalo del polling de la lista (refresco rápido de badge y notificaciones). */
+export const CONV_POLL_INTERVAL_MS = 4_000;
 
 interface UseConversationsPollingOptions {
   enabled: boolean;

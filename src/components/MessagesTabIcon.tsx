@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     height: 28,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
   },
   badge: {
     position: 'absolute',
@@ -50,6 +51,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
+    zIndex: 10,
   },
   badgeText: {
     color: '#fff',
