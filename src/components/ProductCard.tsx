@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { ActivityIndicator, Alert, Image, Pressable, Text, View } from 'react-native';
 
 import type { CatalogProduct } from '../api/catalogApi';
@@ -16,20 +17,28 @@ export function ProductCard({ product, onPress, isAuthenticated = false }: Produ
   const { isFavorite, toggling, toggle } = useFavorite(
     'product',
     product.id,
-    isAuthenticated
-      ? {
-          productName: product.name,
-          thumbnailUrl: product.thumbnailUrl,
-          price: product.price,
-          storeId: product.storeId,
-          storeName: product.storeName,
-        }
-      : undefined,
+    {
+      productName: product.name,
+      thumbnailUrl: product.thumbnailUrl,
+      price: product.price,
+      storeId: product.storeId,
+      storeName: product.storeName,
+    },
   );
 
   const handleFavoritePress = async (e: any) => {
     e?.stopPropagation?.();
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Iniciar sesión',
+        'Debes iniciar sesión para guardar productos en tus favoritos.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Iniciar sesión', onPress: () => router.push('/(auth)/login') },
+        ],
+      );
+      return;
+    }
     try {
       await toggle();
     } catch (err) {
@@ -81,40 +90,38 @@ export function ProductCard({ product, onPress, isAuthenticated = false }: Produ
           <Ionicons name="shirt-outline" size={40} color="#2B8FD4" />
         )}
 
-        {isAuthenticated ? (
-          <Pressable
-            onPress={handleFavoritePress}
-            disabled={toggling}
-            hitSlop={8}
-            style={({ pressed }) => ({
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              backgroundColor: 'rgba(255,255,255,0.95)',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: pressed || toggling ? 0.75 : 1,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.15,
-              shadowRadius: 4,
-              elevation: 3,
-            })}
-          >
-            {toggling ? (
-              <ActivityIndicator size="small" color="#E11D48" />
-            ) : (
-              <Ionicons
-                name={isFavorite ? 'heart' : 'heart-outline'}
-                size={18}
-                color="#E11D48"
-              />
-            )}
-          </Pressable>
-        ) : null}
+        <Pressable
+          onPress={handleFavoritePress}
+          disabled={toggling}
+          hitSlop={8}
+          style={({ pressed }) => ({
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: pressed || toggling ? 0.75 : 1,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.15,
+            shadowRadius: 4,
+            elevation: 3,
+          })}
+        >
+          {toggling ? (
+            <ActivityIndicator size="small" color="#E11D48" />
+          ) : (
+            <Ionicons
+              name={isFavorite ? 'heart' : 'heart-outline'}
+              size={18}
+              color="#E11D48"
+            />
+          )}
+        </Pressable>
       </View>
 
       <View style={{ padding: 12 }}>
