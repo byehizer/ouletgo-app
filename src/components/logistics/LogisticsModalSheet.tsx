@@ -306,18 +306,6 @@ export function LogisticsModalSheet({ visible, onClose }: LogisticsModalSheetPro
                       value={addrCity}
                       onChangeText={setAddrCity}
                     />
-
-                    <Pressable
-                      onPress={handleSaveAddress}
-                      disabled={saving}
-                      style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.9 }]}
-                    >
-                      {saving ? (
-                        <ActivityIndicator size="small" color="#FFFFFF" />
-                      ) : (
-                        <Text style={styles.saveBtnText}>Guardar y seleccionar dirección</Text>
-                      )}
-                    </Pressable>
                   </View>
                 )}
 
@@ -340,6 +328,22 @@ export function LogisticsModalSheet({ visible, onClose }: LogisticsModalSheetPro
                   </View>
                 )}
               </ScrollView>
+
+              {currentView === 'ADD_ADDRESS' && (
+                <View style={styles.footerContainer}>
+                  <Pressable
+                    onPress={handleSaveAddress}
+                    disabled={saving}
+                    style={({ pressed }) => [styles.saveBtn, pressed && { opacity: 0.9 }]}
+                  >
+                    {saving ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.saveBtnText}>Guardar y seleccionar dirección</Text>
+                    )}
+                  </Pressable>
+                </View>
+              )}
             </KeyboardAvoidingView>
           )}
         </View>
@@ -500,14 +504,20 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     backgroundColor: '#FFFFFF',
   },
+  footerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
   saveBtn: {
     height: 48,
     backgroundColor: '#2B8FD4',
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 32,
   },
   saveBtnText: {
     color: '#FFFFFF',
