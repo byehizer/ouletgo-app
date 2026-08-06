@@ -286,7 +286,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         return;
       }
-    }
 
     try {
       const googleUrl = await fetchGoogleInitUrl();

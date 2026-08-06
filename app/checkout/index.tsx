@@ -571,7 +571,7 @@ export default function CheckoutScreen() {
         if (parsed.orderId) finalOrderId = parsed.orderId;
       } else {
         const returnScheme = 'outletgo://';
-        let result: WebBrowser.WebBrowserResult;
+        let result: any;
         try {
           result = await WebBrowser.openAuthSessionAsync(mpInitPoint, returnScheme);
         } catch {
