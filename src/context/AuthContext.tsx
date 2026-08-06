@@ -284,9 +284,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
         }
-          return;
-        }
-      return;
+        return;
+      }
     }
 
     try {
