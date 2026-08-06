@@ -70,6 +70,7 @@ export interface NearbyStore {
   ratingCount: number;
   distanceKm: number;
   isOpenNow?: boolean;
+  schedule?: StoreSchedule[];
   /** Indica si la tienda ofrece envío a domicilio, retiro o ambos. */
   shippingCapability?: ShippingCapability;
 }

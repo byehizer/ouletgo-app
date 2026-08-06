@@ -97,8 +97,8 @@ export function NearbyStoreCard({ store, onPress, onClose }: NearbyStoreCardProp
                 </Text>
               ) : null}
               {(() => {
-                const isOpen = store.schedules && store.schedules.length > 0
-                  ? isStoreOpenNow(store.schedules)
+                const isOpen = store.schedule && store.schedule.length > 0
+                  ? isStoreOpenNow(store.schedule)
                   : store.isOpenNow;
                 return isOpen != null ? <OpenNowPill isOpen={isOpen} variant="short" /> : null;
               })()}

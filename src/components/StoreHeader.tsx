@@ -70,8 +70,8 @@ export function StoreHeader({ store }: StoreHeaderProps) {
           )}
 
           {(() => {
-            const isOpen = store.schedules && store.schedules.length > 0
-              ? isStoreOpenNow(store.schedules)
+            const isOpen = store.schedule && store.schedule.length > 0
+              ? isStoreOpenNow(store.schedule)
               : store.isOpenNow;
             return isOpen != null ? (
               <View style={{ alignSelf: 'flex-start', marginTop: 8 }}>
