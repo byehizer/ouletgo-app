@@ -371,6 +371,7 @@ export default function CheckoutScreen() {
   const [selectedPickupId, setSelectedPickupId] = useState<string | null>(null);
 
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isManualAddress, setIsManualAddress] = useState(false);
   const [address, setAddress] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [quotes, setQuotes] = useState<ShippingQuote[]>([]);
@@ -384,6 +385,57 @@ export default function CheckoutScreen() {
 
   const isSubmitting = useRef(false);
 
+  const handleFetchQuotes = useCallback(async (cpOverride?: string, force = false) => {
+    const cp = (cpOverride ?? postalCode).trim();
+    if (!cp || cp.length < 4) return;
+    if (!force && lastQuotedPostalCode.current === cp && quotesFetched && quotes.length > 0 && selectedCarrier != null) {
+      return;
+    }
+
+    setLoadingQuotes(true);
+    try {
+      const result = await getShippingQuotes({ postalCode: cp });
+      setQuotes(result);
+      setQuotesFetched(true);
+      lastQuotedPostalCode.current = cp;
+      if (result.length > 0 && result[0]) {
+        setSelectedCarrier(result[0].carrier);
+      } else {
+        setSelectedCarrier(null);
+      }
+    } catch {
+      setQuotes([]);
+      setQuotesFetched(false);
+      lastQuotedPostalCode.current = null;
+      setSelectedCarrier(null);
+      Alert.alert('Error', 'No se pudo cotizar el envío. Verificá el código postal e intentá de nuevo.');
+    } finally {
+      setLoadingQuotes(false);
+    }
+  }, [postalCode, quotesFetched, quotes.length, selectedCarrier]);
+
+  const handleSelectSavedAddress = useCallback((addrId: string) => {
+    const found = savedAddresses.find((a) => a.id === addrId);
+    if (!found) return;
+    setSelectedAddressId(found.id);
+    setIsManualAddress(false);
+    const fullAddr = `${found.street} ${found.number}${found.apartment ? `, Depto ${found.apartment}` : ''}, ${found.city}`;
+    setAddress(fullAddr);
+    setPostalCode(found.postalCode);
+    void handleFetchQuotes(found.postalCode, true);
+  }, [savedAddresses, handleFetchQuotes]);
+
+  const handleSelectManualAddress = useCallback(() => {
+    setSelectedAddressId(null);
+    setIsManualAddress(true);
+    setAddress('');
+    setPostalCode('');
+    setQuotes([]);
+    setQuotesFetched(false);
+    setSelectedCarrier(null);
+    lastQuotedPostalCode.current = null;
+  }, []);
+
   // Sync preference or saved addresses into checkout state
   useEffect(() => {
     if (preference) {
@@ -392,22 +444,16 @@ export default function CheckoutScreen() {
       } else if (preference.type === 'DELIVERY' && preference.referenceId) {
         const found = savedAddresses.find((a) => a.id === preference.referenceId);
         if (found) {
-          setSelectedAddressId(found.id);
-          const fullAddr = `${found.street} ${found.number}${found.apartment ? `, Depto ${found.apartment}` : ''}, ${found.city}`;
-          setAddress(fullAddr);
-          setPostalCode(found.postalCode);
+          handleSelectSavedAddress(found.id);
         }
       }
-    } else if (savedAddresses.length > 0 && !selectedAddressId) {
+    } else if (savedAddresses.length > 0 && !selectedAddressId && !isManualAddress) {
       const def = savedAddresses.find((a) => a.isDefault) ?? savedAddresses[0];
       if (def) {
-        setSelectedAddressId(def.id);
-        const fullAddr = `${def.street} ${def.number}${def.apartment ? `, Depto ${def.apartment}` : ''}, ${def.city}`;
-        setAddress(fullAddr);
-        setPostalCode(def.postalCode);
+        handleSelectSavedAddress(def.id);
       }
     }
-  }, [preference, savedAddresses]);
+  }, [preference, savedAddresses, handleSelectSavedAddress, selectedAddressId, isManualAddress]);
 
   // Load pickup points when method is RETIRO_EN_PUNTO
   useEffect(() => {
@@ -417,7 +463,6 @@ export default function CheckoutScreen() {
     getPickupPoints()
       .then((pts) => {
         setPickupPoints(pts);
-        // Pre-select preference point if set, else first point
         const prefPointId = preference?.type === 'PICKUP' ? preference.referenceId : null;
         if (prefPointId && pts.some((p) => p.id === prefPointId)) {
           setSelectedPickupId(prefPointId);
@@ -431,31 +476,6 @@ export default function CheckoutScreen() {
       .finally(() => setLoadingPoints(false));
   }, [deliveryMethod, pickupPoints.length, preference]);
 
-  const handleFetchQuotes = useCallback(async (cpOverride?: string) => {
-    const cp = (cpOverride ?? postalCode).trim();
-    if (!cp || cp.length < 4) return;
-    if (lastQuotedPostalCode.current === cp) return;
-
-    setLoadingQuotes(true);
-    setSelectedCarrier(null);
-    try {
-      const result = await getShippingQuotes({ postalCode: cp });
-      setQuotes(result);
-      setQuotesFetched(true);
-      lastQuotedPostalCode.current = cp;
-      if (result.length > 0 && result[0]) {
-        setSelectedCarrier(result[0].carrier);
-      }
-    } catch {
-      setQuotes([]);
-      setQuotesFetched(false);
-      lastQuotedPostalCode.current = null;
-      Alert.alert('Error', 'No se pudo cotizar el envío. Verificá el código postal e intentá de nuevo.');
-    } finally {
-      setLoadingQuotes(false);
-    }
-  }, [postalCode, selectedCarrier]);
-
   // Auto-cotizar al completar el CP (4+ dígitos)
   useEffect(() => {
     if (deliveryMethod !== 'ENVIO_CORREO') return;
@@ -464,7 +484,7 @@ export default function CheckoutScreen() {
 
     const timer = setTimeout(() => {
       void handleFetchQuotes(cp);
-    }, 500);
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [deliveryMethod, postalCode, handleFetchQuotes]);
@@ -807,11 +827,11 @@ export default function CheckoutScreen() {
             <View style={{ marginTop: 16 }}>
               <SectionTitle>Datos de entrega</SectionTitle>
 
-              {/* Direcciones guardadas */}
-              {savedAddresses.length > 0 ? (
+              {/* Modo: Direcciones guardadas */}
+              {savedAddresses.length > 0 && !isManualAddress ? (
                 <View style={{ marginBottom: 16 }}>
                   <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.text.secondary, marginBottom: 8 }}>
-                    Seleccionar de tus direcciones guardadas
+                    Tus direcciones guardadas
                   </Text>
                   <View style={{ gap: 8, marginBottom: 10 }}>
                     {savedAddresses.map((addr) => {
@@ -819,13 +839,7 @@ export default function CheckoutScreen() {
                       return (
                         <Pressable
                           key={addr.id}
-                          onPress={() => {
-                            setSelectedAddressId(addr.id);
-                            const fullAddr = `${addr.street} ${addr.number}${addr.apartment ? `, Depto ${addr.apartment}` : ''}, ${addr.city}`;
-                            setAddress(fullAddr);
-                            setPostalCode(addr.postalCode);
-                            void handleFetchQuotes(addr.postalCode);
-                          }}
+                          onPress={() => handleSelectSavedAddress(addr.id)}
                           style={({ pressed }) => [
                             styles.optionCard,
                             isSelected && styles.optionCardSelected,
@@ -849,20 +863,14 @@ export default function CheckoutScreen() {
                   </View>
 
                   <Pressable
-                    onPress={() => {
-                      setSelectedAddressId(null);
-                      setAddress('');
-                      setPostalCode('');
-                      setQuotes([]);
-                      setQuotesFetched(false);
-                      setSelectedCarrier(null);
-                    }}
+                    onPress={handleSelectManualAddress}
                     style={({ pressed }) => [
                       {
                         flexDirection: 'row',
                         alignItems: 'center',
                         gap: 6,
                         paddingVertical: 6,
+                        marginTop: 4,
                       },
                       pressed && { opacity: 0.7 },
                     ]}
@@ -875,84 +883,112 @@ export default function CheckoutScreen() {
                 </View>
               ) : null}
 
-              {/* Dirección */}
-              <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.text.secondary, marginBottom: 6 }}>
-                Dirección de entrega
-              </Text>
-              <TextInput
-                value={address}
-                onChangeText={(t) => {
-                  setAddress(t);
-                  setSelectedAddressId(null);
-                }}
-                placeholder="Ej: Av. Corrientes 1234, CABA"
-                placeholderTextColor={Colors.text.muted}
-                style={{
-                  backgroundColor: Colors.surface.card,
-                  borderRadius: 10,
-                  borderWidth: 1,
-                  borderColor: Colors.border.DEFAULT,
-                  padding: 12,
-                  fontSize: 14,
-                  color: Colors.text.primary,
-                  marginBottom: 12,
-                }}
-                returnKeyType="next"
-                autoCorrect={false}
-              />
-
-              {/* CP + Cotizar */}
-              <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.text.secondary, marginBottom: 6 }}>
-                Código postal
-              </Text>
-              <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
-                <TextInput
-                  value={postalCode}
-                  onChangeText={(t) => {
-                    setPostalCode(t);
-                    setSelectedAddressId(null);
-                    setQuotesFetched(false);
-                    setSelectedCarrier(null);
-                    lastQuotedPostalCode.current = null;
-                  }}
-                  placeholder="Ej: 1043"
-                  placeholderTextColor={Colors.text.muted}
-                  keyboardType="number-pad"
-                  maxLength={8}
-                  style={{
-                    flex: 1,
-                    backgroundColor: Colors.surface.card,
-                    borderRadius: 10,
-                    borderWidth: 1,
-                    borderColor: Colors.border.DEFAULT,
-                    padding: 12,
-                    fontSize: 14,
-                    color: Colors.text.primary,
-                  }}
-                />
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => void handleFetchQuotes()}
-                  disabled={loadingQuotes || postalCode.trim().length < 4}
-                  style={[
-                    styles.quoteBtn,
-                    (loadingQuotes || postalCode.trim().length < 4) && styles.quoteBtnDisabled,
-                  ]}
-                >
-                  {loadingQuotes ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <Text
-                      style={[
-                        styles.quoteBtnText,
-                        postalCode.trim().length < 4 && styles.quoteBtnTextDisabled,
+              {/* Modo: Formulario manual de dirección */}
+              {savedAddresses.length === 0 || isManualAddress ? (
+                <View style={{ marginBottom: 16 }}>
+                  {savedAddresses.length > 0 && (
+                    <Pressable
+                      onPress={() => {
+                        const def = savedAddresses.find((a) => a.isDefault) ?? savedAddresses[0];
+                        if (def) handleSelectSavedAddress(def.id);
+                      }}
+                      style={({ pressed }) => [
+                        {
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          gap: 6,
+                          marginBottom: 12,
+                        },
+                        pressed && { opacity: 0.7 },
                       ]}
                     >
-                      Cotizar
-                    </Text>
+                      <Ionicons name="arrow-back" size={16} color={Colors.brand.DEFAULT} />
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.brand.DEFAULT }}>
+                        Volver a mis direcciones guardadas
+                      </Text>
+                    </Pressable>
                   )}
-                </TouchableOpacity>
-              </View>
+
+                  {/* Dirección */}
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.text.secondary, marginBottom: 6 }}>
+                    Dirección de entrega
+                  </Text>
+                  <TextInput
+                    value={address}
+                    onChangeText={(t) => {
+                      setAddress(t);
+                      setSelectedAddressId(null);
+                    }}
+                    placeholder="Ej: Av. Corrientes 1234, CABA"
+                    placeholderTextColor={Colors.text.muted}
+                    style={{
+                      backgroundColor: Colors.surface.card,
+                      borderRadius: 10,
+                      borderWidth: 1,
+                      borderColor: Colors.border.DEFAULT,
+                      padding: 12,
+                      fontSize: 14,
+                      color: Colors.text.primary,
+                      marginBottom: 12,
+                    }}
+                    returnKeyType="next"
+                    autoCorrect={false}
+                  />
+
+                  {/* CP + Cotizar */}
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.text.secondary, marginBottom: 6 }}>
+                    Código postal
+                  </Text>
+                  <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+                    <TextInput
+                      value={postalCode}
+                      onChangeText={(t) => {
+                        setPostalCode(t);
+                        setSelectedAddressId(null);
+                        setQuotesFetched(false);
+                        setSelectedCarrier(null);
+                        lastQuotedPostalCode.current = null;
+                      }}
+                      placeholder="Ej: 1043"
+                      placeholderTextColor={Colors.text.muted}
+                      keyboardType="number-pad"
+                      maxLength={8}
+                      style={{
+                        flex: 1,
+                        backgroundColor: Colors.surface.card,
+                        borderRadius: 10,
+                        borderWidth: 1,
+                        borderColor: Colors.border.DEFAULT,
+                        padding: 12,
+                        fontSize: 14,
+                        color: Colors.text.primary,
+                      }}
+                    />
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      onPress={() => void handleFetchQuotes(postalCode, true)}
+                      disabled={loadingQuotes || postalCode.trim().length < 4}
+                      style={[
+                        styles.quoteBtn,
+                        (loadingQuotes || postalCode.trim().length < 4) && styles.quoteBtnDisabled,
+                      ]}
+                    >
+                      {loadingQuotes ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <Text
+                          style={[
+                            styles.quoteBtnText,
+                            postalCode.trim().length < 4 && styles.quoteBtnTextDisabled,
+                          ]}
+                        >
+                          Cotizar
+                        </Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : null}
 
               {postalCode.trim().length > 0 && postalCode.trim().length < 4 ? (
                 <Text style={styles.shippingHint}>El código postal debe tener al menos 4 dígitos.</Text>
@@ -967,7 +1003,7 @@ export default function CheckoutScreen() {
 
               {/* Carriers */}
               {quotesFetched && quotes.length > 0 ? (
-                <View>
+                <View style={{ marginTop: 8 }}>
                   <SectionTitle>Elegí el servicio de envío</SectionTitle>
                   <View style={styles.optionList}>
                     {quotes.map((q) => (
