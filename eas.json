@@ -19,7 +19,9 @@
       "env": {
         "USE_MOCKS": "false",
         "EXPO_PUBLIC_BACKEND_URL": "https://outletgo-backend.onrender.com",
-        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCLewZhT5sAoZm4AR-OtEOkbP-G7g-cWkc"
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCLewZhT5sAoZm4AR-OtEOkbP-G7g-cWkc",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://mlsqofdvdjcpjdasrgdk.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sc3FvZmR2ZGpjcGpkYXNyZ2RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTAwMzksImV4cCI6MjA5NDc4NjAzOX0.-bMMiiq_kB27cX0DcCm-qSLfbNkxUAvsjbN2o-darTE"
       },
       "android": {
         "buildType": "apk"
@@ -30,7 +32,9 @@
       "env": {
         "USE_MOCKS": "false",
         "EXPO_PUBLIC_BACKEND_URL": "https://outletgo-backend.onrender.com",
-        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCLewZhT5sAoZm4AR-OtEOkbP-G7g-cWkc"
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyCLewZhT5sAoZm4AR-OtEOkbP-G7g-cWkc",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://mlsqofdvdjcpjdasrgdk.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sc3FvZmR2ZGpjcGpkYXNyZ2RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTAwMzksImV4cCI6MjA5NDc4NjAzOX0.-bMMiiq_kB27cX0DcCm-qSLfbNkxUAvsjbN2o-darTE"
       },
       "android": {
         "buildType": "app-bundle"
