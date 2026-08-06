@@ -370,21 +370,35 @@ function CompactFavoriteStoreCard({ store, onPress }: { store: FavoriteStore; on
         opacity: pressed ? 0.9 : 1,
       })}
     >
-      <View
-        style={{
-          width: 50,
-          height: 50,
-          borderRadius: 25,
-          backgroundColor: '#FFF1F2',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 8,
-          borderWidth: 1,
-          borderColor: '#FDA4AF',
-        }}
-      >
-        <Ionicons name="heart" size={24} color="#E11D48" />
-      </View>
+      {store.imageUrl ? (
+        <Image
+          source={{ uri: store.imageUrl }}
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            marginBottom: 8,
+            borderWidth: 1,
+            borderColor: '#E2E8F0',
+          }}
+        />
+      ) : (
+        <View
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            backgroundColor: '#FFF1F2',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 8,
+            borderWidth: 1,
+            borderColor: '#FDA4AF',
+          }}
+        >
+          <Ionicons name="storefront-outline" size={24} color="#E11D48" />
+        </View>
+      )}
       <Text
         numberOfLines={1}
         style={{ fontSize: 13, fontWeight: '700', color: '#0F172A', textAlign: 'center', width: '100%' }}

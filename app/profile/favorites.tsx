@@ -194,9 +194,13 @@ export default function FavoritesScreen() {
               onPress={() => router.push(`/store/${item.storeId}`)}
             >
               <View style={styles.cardInner}>
-                <View style={[styles.thumb, styles.storeThumb]}>
-                  <Ionicons name="storefront-outline" size={24} color={Colors.brand.DEFAULT} />
-                </View>
+                {item.imageUrl ? (
+                  <Image source={{ uri: item.imageUrl }} style={[styles.thumb, { borderRadius: 10 }]} />
+                ) : (
+                  <View style={[styles.thumb, styles.storeThumb]}>
+                    <Ionicons name="storefront-outline" size={24} color={Colors.brand.DEFAULT} />
+                  </View>
+                )}
                 <View style={styles.cardBody}>
                   <Text style={styles.cardTitle}>{item.storeName}</Text>
                   <Text style={styles.cardSub} numberOfLines={2}>

@@ -47,6 +47,7 @@ const SEED_STORES: MockFavoriteStore[] = [
     address: 'Av. Mitre 2847, Avellaneda, Buenos Aires',
     ratingAvg: 4.3,
     ratingCount: 128,
+    imageUrl: 'https://picsum.photos/seed/store1/200/200',
     addedAt: '2026-04-20T09:00:00.000Z',
   },
   {
@@ -56,6 +57,7 @@ const SEED_STORES: MockFavoriteStore[] = [
     address: 'Monteagudo 890, Avellaneda, Buenos Aires',
     ratingAvg: 4.6,
     ratingCount: 204,
+    imageUrl: 'https://picsum.photos/seed/store3/200/200',
     addedAt: '2026-05-12T16:00:00.000Z',
   },
 ];

@@ -27,6 +27,7 @@ export interface FavoriteStore {
   address: string;
   ratingAvg: number | null;
   ratingCount: number;
+  imageUrl?: string | null;
   addedAt: string;
 }
 
@@ -44,6 +45,7 @@ export interface FavoriteStoreMeta {
   address: string;
   ratingAvg: number | null;
   ratingCount: number;
+  imageUrl?: string | null;
 }
 
 function parseFavoriteProduct(raw: unknown): FavoriteProduct | null {
@@ -74,6 +76,7 @@ function parseFavoriteStore(raw: unknown): FavoriteStore | null {
   const storeName = o['storeName'] ?? o['store_name'];
   const address = o['address'];
   const addedAt = o['addedAt'] ?? o['added_at'];
+  const rawImg = o['imageUrl'] ?? o['image_url'] ?? o['logoUrl'] ?? o['logo_url'] ?? o['avatarUrl'] ?? o['avatar_url'] ?? o['headerImage'] ?? o['header_image'];
   if (typeof storeId !== 'string' || typeof storeName !== 'string') return null;
   return {
     storeId,
@@ -81,6 +84,7 @@ function parseFavoriteStore(raw: unknown): FavoriteStore | null {
     address: typeof address === 'string' ? address : '',
     ratingAvg: typeof o['ratingAvg'] === 'number' ? o['ratingAvg'] : typeof o['rating_avg'] === 'number' ? o['rating_avg'] : null,
     ratingCount: typeof o['ratingCount'] === 'number' ? o['ratingCount'] : typeof o['rating_count'] === 'number' ? o['rating_count'] : 0,
+    imageUrl: typeof rawImg === 'string' && rawImg.length > 0 ? rawImg : null,
     addedAt: typeof addedAt === 'string' ? addedAt : new Date().toISOString(),
   };
 }

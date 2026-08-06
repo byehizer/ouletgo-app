@@ -3,6 +3,7 @@ import { Image, Linking, Pressable, Text, View } from 'react-native';
 
 import type { StoreProfile } from '../api/storeApi';
 import { formatDistanceKm } from '../lib/location';
+import { isStoreOpenNow } from '../lib/storeSchedule';
 
 import { OpenNowPill } from './OpenNowPill';
 import { RatingStars } from './RatingStars';
@@ -68,11 +69,16 @@ export function StoreHeader({ store }: StoreHeaderProps) {
             <Text style={{ fontSize: 13, color: '#64748B', marginTop: 6 }}>Sin reseñas aún</Text>
           )}
 
-          {store.isOpenNow != null ? (
-            <View style={{ alignSelf: 'flex-start', marginTop: 8 }}>
-              <OpenNowPill isOpen={store.isOpenNow} variant="long" showBorder />
-            </View>
-          ) : null}
+          {(() => {
+            const isOpen = store.schedules && store.schedules.length > 0
+              ? isStoreOpenNow(store.schedules)
+              : store.isOpenNow;
+            return isOpen != null ? (
+              <View style={{ alignSelf: 'flex-start', marginTop: 8 }}>
+                <OpenNowPill isOpen={isOpen} variant="long" showBorder />
+              </View>
+            ) : null;
+          })()}
         </View>
       </View>
 

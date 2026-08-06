@@ -3,6 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 
 import type { NearbyStore } from '../api/storeApi';
 import { formatDistanceKm } from '../lib/location';
+import { isStoreOpenNow } from '../lib/storeSchedule';
 
 import { OpenNowPill } from './OpenNowPill';
 import { RatingStars } from './RatingStars';
@@ -95,9 +96,12 @@ export function NearbyStoreCard({ store, onPress, onClose }: NearbyStoreCardProp
                   {distanceLabel}
                 </Text>
               ) : null}
-              {store.isOpenNow != null ? (
-                <OpenNowPill isOpen={store.isOpenNow} variant="short" />
-              ) : null}
+              {(() => {
+                const isOpen = store.schedules && store.schedules.length > 0
+                  ? isStoreOpenNow(store.schedules)
+                  : store.isOpenNow;
+                return isOpen != null ? <OpenNowPill isOpen={isOpen} variant="short" /> : null;
+              })()}
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginLeft: 12 }}>
