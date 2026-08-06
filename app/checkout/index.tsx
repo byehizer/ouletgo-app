@@ -436,9 +436,12 @@ export default function CheckoutScreen() {
     lastQuotedPostalCode.current = null;
   }, []);
 
-  // Sync preference or saved addresses into checkout state
+  // Sync preference or saved addresses into checkout state ONLY ON MOUNT
+  const preferenceSynced = useRef(false);
   useEffect(() => {
+    if (preferenceSynced.current) return;
     if (preference) {
+      preferenceSynced.current = true;
       if (preference.type === 'PICKUP' && preference.referenceId) {
         setSelectedPickupId(preference.referenceId);
       } else if (preference.type === 'DELIVERY' && preference.referenceId) {
@@ -448,6 +451,7 @@ export default function CheckoutScreen() {
         }
       }
     } else if (savedAddresses.length > 0 && !selectedAddressId && !isManualAddress) {
+      preferenceSynced.current = true;
       const def = savedAddresses.find((a) => a.isDefault) ?? savedAddresses[0];
       if (def) {
         handleSelectSavedAddress(def.id);
@@ -866,17 +870,22 @@ export default function CheckoutScreen() {
                     onPress={handleSelectManualAddress}
                     style={({ pressed }) => [
                       {
-                        flexDirection: 'row',
                         alignItems: 'center',
-                        gap: 6,
-                        paddingVertical: 6,
-                        marginTop: 4,
+                        justifyContent: 'center',
+                        paddingVertical: 14,
+                        paddingHorizontal: 16,
+                        marginTop: 6,
+                        backgroundColor: '#F8FAFC',
+                        borderRadius: 12,
+                        borderWidth: 1.5,
+                        borderColor: '#CBD5E1',
+                        borderStyle: 'dashed',
                       },
-                      pressed && { opacity: 0.7 },
+                      pressed && { opacity: 0.75, backgroundColor: '#F1F5F9' },
                     ]}
                   >
-                    <Ionicons name="add-circle-outline" size={18} color={Colors.brand.DEFAULT} />
-                    <Text style={{ fontSize: 13, fontWeight: '600', color: Colors.brand.DEFAULT }}>
+                    <Ionicons name="add-circle-outline" size={24} color={Colors.brand.DEFAULT} style={{ marginBottom: 4 }} />
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: Colors.brand.DEFAULT, textAlign: 'center' }}>
                       Ingresar otra dirección manualmente
                     </Text>
                   </Pressable>
